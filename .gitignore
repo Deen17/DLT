@@ -1,0 +1,6 @@
+.vscode/
+cp-docker-images/
+spotify-kafka/
+node_modules/
+testscala/target
+testscala/project

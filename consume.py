@@ -1,0 +1,25 @@
+from confluent_kafka import Consumer
+
+conf = {'bootstrap.servers': "131.247.226.23:9092",
+        'group.id': "foo",
+        'default.topic.config': {'auto.offset.reset': 'smallest'}}
+
+consumer = Consumer(conf)
+consumer.subscribe(['transactions'])
+
+try:
+    while True:
+        msg = consumer.poll(1.0)
+        
+        if msg is None:
+            continue
+        if msg.error():
+            print("Consumer error: {}".format(msg.error()))
+            continue
+        
+        print('Received message: {}'.format(msg.value().decode('utf-8')))
+
+
+except KeyboardInterrupt:
+    print("Goodbye")
+    consumer.close()
