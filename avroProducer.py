@@ -1,5 +1,6 @@
 from confluent_kafka import avro
 from confluent_kafka.avro import AvroProducer
+import random
 key_schema_str = """
 {
    "namespace": "transaction.test",
@@ -59,6 +60,8 @@ key = {
     "transactionID": 0
 }
 
+x = random.randint(1, 1000)
+
 value = {
     "transactionID": 0,
     "senderAcctNum": 161,
@@ -66,13 +69,13 @@ value = {
     "senderRoutingNum": 15453525,
     "receiverRoutingNum": 44444444,
     "currency": "USD",
-    "amt": 100
+    "amt": x
 }
 
 avroProducer = AvroProducer({
-    'bootstrap.servers': 'localhost:9092',
+    'bootstrap.servers': '131.247.3.206:39092',
     'client.id': 'avrotest',
-    'schema.registry.url': 'http://localhost:8081'
+    'schema.registry.url': 'http://131.247.3.206:8081'
 }, default_key_schema=key_schema, default_value_schema=value_schema)
 
 avroProducer.produce(topic='transactions', value=value, key=key)
