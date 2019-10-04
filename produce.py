@@ -20,6 +20,6 @@ def on_callback(err, msg):
 
 ts = time.time()
 producer.produce('transactions', key='1',
-                 value=f'${ts}: ${x}', on_delivery=on_callback)
+                 value=f'{ts}: ${x}', on_delivery=on_callback)
 producer.flush()
 print(x)
