@@ -1,7 +1,9 @@
-from confluent_kafka import avro
-from confluent_kafka.avro import AvroProducer
-import random
-key_schema_str = """
+import faust
+from  confluent_kafka.avro.serializer import message_serializer
+#from confluent_kafka.avro.serializer import (ValueSerializerError, KeySerializerError, SerializerError)
+app = faust.App('myapp1', broker='kafka://131.247.3.206.39092')
+
+key_schema = """
 {
    "namespace": "transaction.test",
    "name": "key",
@@ -15,7 +17,7 @@ key_schema_str = """
 }
 """
 
-value_schema_str = """
+value_schema = """
 {
    "namespace": "transaction.test",
    "name": "value",
@@ -58,30 +60,19 @@ value_schema_str = """
 }
 """
 
-value_schema = avro.loads(value_schema_str)
-key_schema = avro.loads(key_schema_str)
+x = message_serializer.MessageSerializer(registry_client = 'http://131.247.3.206:8081', reader_key_schema = key_schema, reader_value_schema = value_schema)
 
-key = {
-    "transactionID": 0
-}
+topic = app.topic()
+# Models describe how messages are serialized:
+# {"account_id": "3fae-...", amount": 3}
+class Order(faust.Record):
+    account_id: str
+    amount: int
 
-x = random.randint(1, 1000)
+@app.agent(value_type=Order)
+async def order(orders):
+    async for order in orders:
+        # process infinite stream of orders.
+        print(f'Order for {order.account_id}: {order.amount}')
 
-value = {
-    "transactionID": 0,
-    "senderAcctNum": 161,
-    "receiverAcctNum": 420,
-    "senderRoutingNum": 15453525,
-    "receiverRoutingNum": 44444444,
-    "currency": "USD",
-    "amt": x
-}
 
-avroProducer = AvroProducer({
-    'bootstrap.servers': '131.247.3.206:39092',
-    'client.id': 'avrotest',
-    'schema.registry.url': 'http://131.247.3.206:8081'
-}, default_key_schema=key_schema, default_value_schema=value_schema)
-
-avroProducer.produce(topic='transactions', value=value, key=key)
-avroProducer.flush()
