@@ -36,7 +36,7 @@ async def process(transactions):
         # process infinite stream of orders.
         # print(transaction, transaction.amt)
 
-        sum= sum + 1
+        sum=sum+1
         if transaction.amt >= 10000:
             gte += 1
             await gte10k.send(value=transaction)
