@@ -31,12 +31,12 @@ lt10k = app.topic('lt10k',
 @app.agent(initiated_topic)
 async def process(transactions):
     lt = gte = 0
-    sum=0;
+    sum=0
     async for transaction in transactions:
         # process infinite stream of orders.
         # print(transaction, transaction.amt)
 
-        sum++;
+        sum=sum+1
         if transaction.amt >= 10000:
             gte += 1
             await gte10k.send(value=transaction)
