@@ -1,21 +1,47 @@
 import faust
-from  confluent_kafka.avro.serializer import message_serializer
-#from confluent_kafka.avro.serializer import (ValueSerializerError, KeySerializerError, SerializerError)
-app = faust.App('myapp1', broker='kafka://131.247.3.206.39092')
+from typing import List
+
+app = faust.App('myapp1', broker='kafka://131.247.3.206:39092')
 
 
-
-topic = app.topic()
 # Models describe how messages are serialized:
 # {"account_id": "3fae-...", amount": 3}
-class Order(faust.Record):
-    account_id: str
-    amount: int
+class initiated(faust.Record, serializer='json'):
+    transactionID: int
+    senderAcctNum: str
+    receiverAcctNum: str
+    senderRoutingNum: str
+    receiverRoutingNum: str
+    currency: str
+    amt: float
+    mutations: List[str]
 
-@app.agent(value_type=Order)
-async def order(orders):
-    async for order in orders:
+
+initiated_topic = app.topic('initiated_transactions',
+                            key_type=bytes,
+                            value_type=initiated)
+gte10k = app.topic('gte10k',
+                   key_type=bytes,
+                   value_type=initiated)
+lt10k = app.topic('lt10k',
+                  key_type=bytes,
+                  value_type=initiated)
+
+
+@app.agent(initiated_topic)
+async def process(transactions):
+    lt = gte = 0
+    async for transaction in transactions:
         # process infinite stream of orders.
-        print(f'Order for {order.account_id}: {order.amount}')
+        # print(transaction, transaction.amt)
+        if transaction.amt >= 10000:
+            gte += 1
+            await gte10k.send(value=transaction)
+            print("gte: %d" % gte)
+        else:
+            lt += 1
+            await lt10k.send(value=transaction)
+            print("lt: %d" % lt)
 
-
+if __name__ == '__main__':
+    app.main()
