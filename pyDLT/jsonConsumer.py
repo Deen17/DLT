@@ -1,11 +1,13 @@
 from confluent_kafka import Consumer
+import sys
 
 conf = {'bootstrap.servers': "131.247.3.206:39092",
-        'group.id': "adilDesktop",
+        'group.id': "settledGroup1",
         'default.topic.config': {'auto.offset.reset': 'smallest'}}
 
 consumer = Consumer(conf)
-consumer.subscribe(['initiated_transactions'])
+consumer.subscribe([sys.argv[1]])
+print("Subscribed to %s" % sys.argv[1])
 
 try:
     while True:
