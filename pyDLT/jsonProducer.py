@@ -10,7 +10,7 @@ conf = {
 
 producer = Producer(conf)
 
-x = random.randint(0, 20001)
+x = random.randint(0, 20000)
 
 value = {
     "transactionID": "000000000000",
@@ -35,8 +35,8 @@ def on_callback(err, msg):
 
 
 async def main():
-    for i in range(1, 15000):
-        x = random.randint(0, 20001)
+    for i in range(1, 40000):
+        x = random.randint(0, 20000)
 
         value = {
             "transactionID": "000000000000",
