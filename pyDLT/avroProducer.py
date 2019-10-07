@@ -3,7 +3,7 @@ from confluent_kafka.avro import AvroProducer
 import random
 key_schema_str = """
 {
-   "namespace": "transaction.test",
+   "namespace": "initialtransaction.test",
    "name": "key",
    "type": "record",
    "fields" : [
@@ -17,7 +17,7 @@ key_schema_str = """
 
 value_schema_str = """
 {
-   "namespace": "transaction.test",
+   "namespace": "initialtransaction.test",
    "name": "value",
    "type": "record",
    "fields" : [
@@ -48,6 +48,11 @@ value_schema_str = """
      {
        "name" : "amt",
        "type" : "int"
+     },
+     {
+       "name" : "mutations",
+       "type" : "array",
+       "items" : "string"
      }
    ]
 }
