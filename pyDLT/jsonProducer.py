@@ -35,8 +35,8 @@ def on_callback(err, msg):
 
 
 async def main():
-    for i in range(1, 15000):
-        x = random.randint(0, 20001)
+    for i in range(0, 30000):
+        x = random.randint(0, 20000)
 
         value = {
             "transactionID": "000000000000",
