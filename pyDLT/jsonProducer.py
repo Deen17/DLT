@@ -2,6 +2,7 @@ from confluent_kafka import Producer
 import json
 import random
 import asyncio
+import time
 
 conf = {
     'bootstrap.servers': '131.247.3.206:39092',
@@ -33,7 +34,7 @@ def on_callback(err, msg):
     else:
         print(msg)
 
-
+start = time.process_time_ns()
 async def main():
     for i in range(1, 40000):
         x = random.randint(0, 20000)
@@ -56,6 +57,7 @@ async def main():
                          value=b,
                          on_delivery=on_callback)
     producer.flush()
+    print(time.process_time_ns() - start)
 
 
 asyncio.run(main())

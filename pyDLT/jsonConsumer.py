@@ -1,5 +1,6 @@
 from confluent_kafka import Consumer
 import sys
+import time
 
 conf = {'bootstrap.servers': "131.247.3.206:39092",
         'group.id': "settledGroup1",
@@ -9,6 +10,8 @@ consumer = Consumer(conf)
 consumer.subscribe([sys.argv[1]])
 print("Subscribed to %s" % sys.argv[1])
 
+start = time.process_time()
+counter = 0
 try:
     while True:
         msg = consumer.poll(1.0)
@@ -18,10 +21,13 @@ try:
         if msg.error():
             print("Consumer error: {}".format(msg.error()))
             continue
-
+        
+        counter += 1
+        print("counter %d" % counter)
         print('Received message: {}'.format(msg.value().decode('utf-8')))
 
 
 except KeyboardInterrupt:
+    print(time.process_time() - start)
     print("Goodbye")
     consumer.close()
