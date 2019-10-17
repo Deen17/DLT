@@ -1,7 +1,7 @@
 from confluent_kafka import Consumer
 import sys
 
-conf = {'bootstrap.servers': "131.247.3.206:39092",
+conf = {'bootstrap.servers': "131.247.3.206:9092",
         'group.id': "settledGroup1",
         'default.topic.config': {'auto.offset.reset': 'smallest'}}
 
