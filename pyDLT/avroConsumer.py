@@ -3,7 +3,7 @@ from confluent_kafka.avro import AvroConsumer
 from confluent_kafka.avro.serializer import SerializerError
 
 consumer = AvroConsumer({
-    'bootstrap.servers': '131.247.3.206:39092',
+    'bootstrap.servers': '131.247.3.206:9092',
     'group.id': 'bar',
     'schema.registry.url': 'http://131.247.3.206:8081'
 })
@@ -14,9 +14,9 @@ try:
             msg = consumer.poll(10)
 
         except SerializerError as e:
-            #print(" Message deserialization failed for {}: }{}".format(msg,e))
+            print(" Message deserialization failed for {}: }{}".format(msg, e))
             break
-            
+
         if msg is None:
             continue
 

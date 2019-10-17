@@ -36,7 +36,7 @@ def on_callback(err, msg):
 
 start = time.process_time_ns()
 async def main():
-    for i in range(1, 40000):
+    for i in range(0, 30000):
         x = random.randint(0, 20000)
 
         value = {
