@@ -78,7 +78,7 @@ value = {
 }
 
 avroProducer = AvroProducer({
-    'bootstrap.servers': '131.247.3.206:39092',
+    'bootstrap.servers': '131.247.3.206:9092',
     'client.id': 'avrotest',
     'schema.registry.url': 'http://131.247.3.206:8081'
 }, default_key_schema=key_schema, default_value_schema=value_schema)

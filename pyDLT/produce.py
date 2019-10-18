@@ -2,7 +2,7 @@ from confluent_kafka import Producer
 import random
 import time
 conf = {
-    'bootstrap.servers': '131.247.3.206:39092',
+    'bootstrap.servers': '131.247.3.206:9092',
     'client.id': 'producerAdil1',
 }
 
