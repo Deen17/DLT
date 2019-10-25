@@ -2,10 +2,12 @@ import faust
 from typing import List
 import redis
 
+# faust -A gcpplain worker -l info --web-port 6067
 r = redis.StrictRedis(host='localhost', port=6379,
                       password="", decode_responses=True)
 # r.delete("gte", "lt")
-app = faust.App('myapp1', broker='kafka://131.247.3.206:39092')
+app = faust.App('myapp1',
+                broker='kafka://34.74.80.207:39092')
 
 
 # Models describe how messages are serialized:
@@ -40,16 +42,14 @@ lt10k = app.topic('lt10k',
 async def process(transactions):
     lt = gte = 0
     async for transaction in transactions:
-        # process infinite stream of orders.
-        # print(transaction, transaction.amt)
         if transaction.amt >= 10000:
             gte = r.incr("gte")
-            await gte10k.send(value=transaction)
+            # await gte10k.send(value=transaction)
             if (gte % 200 == 0):
                 print("gte: %d" % gte)
         else:
             lt = r.incr("lt")
-            await lt10k.send(value=transaction)
+            # await lt10k.send(value=transaction)
             if (lt % 200 == 0):
                 print("lt: %d" % lt)
 
