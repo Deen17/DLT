@@ -1,11 +1,20 @@
 import faust
 from typing import List
 import redis
+import ssl
+
+ssl_context = ssl.create_default_context(
+                                         purpose=ssl.Purpose.SERVER_AUTH,
+                                         cafile='kafka.crt')
+ssl_context.load_cert_chain('kafka.crt',
+                            keyfile='kafka.key')
 
 r = redis.StrictRedis(host='localhost', port=6379,
                       password="", decode_responses=True)
-# r.delete("gte", "lt")
-app = faust.App('myapp1', broker='kafka://131.247.3.206:39092')
+
+app = faust.App('myapp1',
+                broker='kafka://34.74.80.207:39092',
+                broker_credentials=ssl_context)
 
 
 # Models describe how messages are serialized:
@@ -52,6 +61,7 @@ async def process(transactions):
             await lt10k.send(value=transaction)
             if (lt % 200 == 0):
                 print("lt: %d" % lt)
+
 
 if __name__ == '__main__':
     app.main()
