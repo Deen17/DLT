@@ -20,7 +20,7 @@ value = {
     "senderRoutingNum": "15453525",
     "receiverRoutingNum": "44444444",
     "currency": "USD",
-    "amt": 90,
+    "amt": 900,
     "mutations": []
 }
 
