@@ -23,6 +23,7 @@ class initiated(faust.Record, serializer='json'):
     amt: float
     mutations: List[str]
 
+
 x = List[str]
 
 initiated_topic = app.topic('initiated_transactions',
@@ -70,6 +71,7 @@ async def check10Queue():
         if over10k[0][0] + 10 < time.time():
             await debtor_agent.send(value=over10k.pop(0)[1])
             # await settled.send(value=over10k.pop(0)[1])
+
 
 @app.agent(settled)
 async def print_finalized(transactions):

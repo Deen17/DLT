@@ -39,8 +39,8 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 50):
-        x = random.randint(9940, 10010)
+    for i in range(0, 1):
+        x = random.randint(9960, 10010)
 
         value = {
             "transactionID": "000000000000",
@@ -49,7 +49,7 @@ async def main():
             "senderRoutingNum": "15453525",
             "receiverRoutingNum": "44444444",
             "currency": "USD",
-            "amt": x,
+            "amt": 10001,
             "mutations": []
         }
 
