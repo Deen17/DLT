@@ -11,7 +11,7 @@ conf = {
 
 producer = Producer(conf)
 
-x = random.randint(0, 20000)
+x = random.randint(9940, 10010)
 
 value = {
     "transactionID": "000000000000",
@@ -39,8 +39,8 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 20000):
-        x = random.randint(0, 20000)
+    for i in range(0, 50):
+        x = random.randint(9940, 10010)
 
         value = {
             "transactionID": "000000000000",
@@ -60,7 +60,7 @@ async def main():
                          value=b,
                          on_delivery=on_callback)
     producer.flush()
-    print(time.process_time_ns() - start)
+    print("%f seconds" % ((time.process_time_ns() - start) / 1000000000))
 
 
 asyncio.run(main())
