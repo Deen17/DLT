@@ -64,7 +64,7 @@ async def discount(transactions):
         await settled.send(value=transaction)
 
 
-@app.timer(interval=.4,  max_drift_correction=0.15,)
+@app.timer(interval=.4,  max_drift_correction=0.15)
 async def check10Queue():
     if len(over10k) > 0:
         if over10k[0][0] + 10 < time.time():
