@@ -49,7 +49,7 @@ async def main():
             "senderRoutingNum": "15453525",
             "receiverRoutingNum": "44444444",
             "currency": "USD",
-            "amt": 10001,
+            "amt": x,
             "mutations": []
         }
 
