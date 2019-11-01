@@ -45,18 +45,18 @@ over10k = []
 debtor_agent = app.channel()  # in-memory buffer
 
 
-@app.agent(initiated_topic)
+@app.agent(initiated_topic, concurrency=4)
 async def process(transactions):
     async for transaction in transactions:
         if transaction.amt >= 10000:
             # over10k.append([time.time(), transaction])
-            debtor_agent.send(value=transaction)
+            await debtor_agent.send(value=transaction)
         else:
             await debtor_agent.send(value=transaction)
             # await lt10k.send(value=transaction)
 
 
-@app.agent(debtor_agent)
+@app.agent(debtor_agent, concurrency=4)
 async def discount(transactions):
     async for transaction in transactions:
         take = transaction.amt * .1
@@ -78,7 +78,7 @@ async def discount(transactions):
 #     #         # await settled.send(value=over10k.pop(0)[1])
 
 
-@app.agent(settled)
+@app.agent(settled, concurrency=4)
 async def print_finalized(transactions):
     async for tx in transactions:
         r.incr('total')

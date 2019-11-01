@@ -11,7 +11,7 @@ conf = {
 
 producer = Producer(conf)
 
-x = random.randint(9940, 10010)
+x = random.randint(0, 20000)
 
 value = {
     "transactionID": "000000000000",
@@ -20,7 +20,7 @@ value = {
     "senderRoutingNum": "15453525",
     "receiverRoutingNum": "44444444",
     "currency": "USD",
-    "amt": 9000,
+    "amt": x,
     "mutations": []
 }
 
@@ -39,8 +39,8 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 20000):
-        x = random.randint(0, 10010)
+    for i in range(0, 30000):
+        x = random.randint(0, 20000)
 
         value = {
             "transactionID": "000000000000",
