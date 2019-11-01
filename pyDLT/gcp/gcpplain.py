@@ -48,7 +48,6 @@ debtor_agent = app.channel()  # in-memory buffer
 @app.agent(initiated_topic)
 async def process(transactions):
     async for transaction in transactions:
-        print(time.time())
         if transaction.amt >= 10000:
             # over10k.append([time.time(), transaction])
             await debtor_agent.send(value=transaction)
@@ -82,12 +81,8 @@ async def discount(transactions):
 @app.agent(settled)
 async def print_finalized(transactions):
     async for tx in transactions:
-        print(time.time())
-        r.incr('total')
-        if tx.amt < 9000:
-            print(tx)
-        if tx.amt >= 9000:
-            print()
+        # print(time.time())
+        if(r.incr('total') % 200 == 0):
             print(tx)
 
 if __name__ == '__main__':
