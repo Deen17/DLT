@@ -1,9 +1,9 @@
 import faust
 from typing import List
-import time
+# import time
 import redis
 
-# faust -A gcpplain worker -l info --web-port 6067 # --debug
+# faust -A gcpplain worker -l info --web-port 6067
 r = redis.StrictRedis(host='localhost', port=6379,
                       password="", decode_responses=True)
 # r.delete("gte", "lt")
