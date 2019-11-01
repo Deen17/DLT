@@ -1,14 +1,14 @@
 import faust
 from typing import List
 import time
-# import redis
+import redis
 
 # faust -A gcpplain worker -l info --web-port 6067 # --debug
-# r = redis.StrictRedis(host='localhost', port=6379,
-#                       password="", decode_responses=True)
+r = redis.StrictRedis(host='localhost', port=6379,
+                      password="", decode_responses=True)
 # r.delete("gte", "lt")
 app = faust.App('myapp1',
-                broker='kafka://34.74.80.207:39092')
+                broker='kafka://34.74.80.207:39092;kafka://131.247.3.206:9092')
 
 
 # Models describe how messages are serialized:
@@ -49,7 +49,8 @@ debtor_agent = app.channel()  # in-memory buffer
 async def process(transactions):
     async for transaction in transactions:
         if transaction.amt >= 10000:
-            over10k.append([time.time(), transaction])
+            # over10k.append([time.time(), transaction])
+            debtor_agent.send(value=transaction)
         else:
             await debtor_agent.send(value=transaction)
             # await lt10k.send(value=transaction)
@@ -65,17 +66,22 @@ async def discount(transactions):
         await settled.send(value=transaction)
 
 
-@app.timer(interval=.4,  max_drift_correction=0.15)
-async def check10Queue():
-    if len(over10k) > 0:
-        if over10k[0][0] + 10 < time.time():
-            await debtor_agent.send(value=over10k.pop(0)[1])
-            # await settled.send(value=over10k.pop(0)[1])
+# @app.timer(interval=1)
+# async def check10Queue():
+#     if(len(over10k) > 0):
+#         for i in range(len(over10k)):
+#             if(over10k[i][0] + 10 < time.time()):
+#                 await debtor_agent.send(value=over10k.pop(i)[1])
+#     # if len(over10k) > 0:
+#     #     if over10k[0][0] + 10 < time.time():
+#     #         await debtor_agent.send(value=over10k.pop(0)[1])
+#     #         # await settled.send(value=over10k.pop(0)[1])
 
 
 @app.agent(settled)
 async def print_finalized(transactions):
     async for tx in transactions:
+        r.incr('total')
         if tx.amt < 9000:
             print(tx)
         if tx.amt >= 9000:

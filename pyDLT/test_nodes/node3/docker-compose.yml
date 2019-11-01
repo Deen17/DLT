@@ -16,8 +16,8 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
       zk_server.1: 34.74.80.207:2888:3888
-      zk_server.2: 0.0.0.0:2888:3888
-      zk_server.3: 3rdip:2888:3888
+      zk_server.2: 131.247.3.206:2888:3888
+      zk_server.3: 0.0.0.0:2888:3888
 
   broker-2:
     image: confluentinc/cp-kafka:latest

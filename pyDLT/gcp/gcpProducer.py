@@ -5,7 +5,7 @@ import asyncio
 import time
 
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092',
+    'bootstrap.servers': '34.74.80.207:39092,131.247.3.206:9092',
     'client.id': 'jsonProducer1',
 }
 
@@ -39,8 +39,8 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 1):
-        x = random.randint(9960, 10010)
+    for i in range(0, 20000):
+        x = random.randint(0, 10010)
 
         value = {
             "transactionID": "000000000000",
