@@ -5,7 +5,7 @@ import asyncio
 import time
 
 conf = {
-    'bootstrap.servers': '131.247.3.206:39092',
+    'bootstrap.servers': '34.74.80.207:39092,131.247.3.206:9092',
     'client.id': 'jsonProducer1',
 }
 
@@ -20,7 +20,7 @@ value = {
     "senderRoutingNum": "15453525",
     "receiverRoutingNum": "44444444",
     "currency": "USD",
-    "amt": 90,
+    "amt": x,
     "mutations": []
 }
 
@@ -39,7 +39,7 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 20000):
+    for i in range(0, 30000):
         x = random.randint(0, 20000)
 
         value = {
@@ -60,7 +60,7 @@ async def main():
                          value=b,
                          on_delivery=on_callback)
     producer.flush()
-    print(time.process_time_ns() - start)
+    print("%f seconds" % ((time.process_time_ns() - start) / 1000000000))
 
 
 asyncio.run(main())
