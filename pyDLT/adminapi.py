@@ -31,7 +31,7 @@ logging.basicConfig()
 def example_create_topics(a, topics):
     """ Create topics """
 
-    new_topics = [NewTopic(topic, num_partitions=6, replication_factor=2) for topic in topics]
+    new_topics = [NewTopic(topic, num_partitions=6, replication_factor=1) for topic in topics]
     # Call create_topics to asynchronously create topics, a dict
     # of <topic,future> is returned.
     fs = a.create_topics(new_topics)
