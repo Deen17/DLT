@@ -1,6 +1,6 @@
 import faust
 from typing import List
-# import time
+import time
 import redis
 
 # faust -A gcpplain worker -l info --web-port 6067
@@ -45,9 +45,10 @@ over10k = []
 debtor_agent = app.channel()  # in-memory buffer
 
 
-@app.agent(initiated_topic, concurrency=4)
+@app.agent(initiated_topic)
 async def process(transactions):
     async for transaction in transactions:
+        print(time.time())
         if transaction.amt >= 10000:
             # over10k.append([time.time(), transaction])
             await debtor_agent.send(value=transaction)
@@ -56,7 +57,7 @@ async def process(transactions):
             # await lt10k.send(value=transaction)
 
 
-@app.agent(debtor_agent, concurrency=4)
+@app.agent(debtor_agent)
 async def discount(transactions):
     async for transaction in transactions:
         take = transaction.amt * .1
@@ -78,9 +79,10 @@ async def discount(transactions):
 #     #         # await settled.send(value=over10k.pop(0)[1])
 
 
-@app.agent(settled, concurrency=4)
+@app.agent(settled)
 async def print_finalized(transactions):
     async for tx in transactions:
+        print(time.time())
         r.incr('total')
         if tx.amt < 9000:
             print(tx)

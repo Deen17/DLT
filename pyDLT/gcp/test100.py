@@ -1,17 +1,14 @@
 from confluent_kafka import Producer
 import json
-import random
 import asyncio
 import time
 
 conf = {
     'bootstrap.servers': '34.74.80.207:39092,131.247.3.206:9092',
-    'client.id': 'jsonProducer1',
+    'client.id': 'test100',
 }
 
 producer = Producer(conf)
-
-x = random.randint(0, 20000)
 
 value = {
     "transactionID": "000000000000",
@@ -20,7 +17,7 @@ value = {
     "senderRoutingNum": "15453525",
     "receiverRoutingNum": "44444444",
     "currency": "USD",
-    "amt": x,
+    "amt": 100,
     "mutations": []
 }
 
@@ -39,8 +36,8 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 30000):
-        x = random.randint(0, 20000)
+    for i in range(0, 100):
+        # x = random.randint(0, 20000)
 
         value = {
             "transactionID": "000000000000",
@@ -49,7 +46,7 @@ async def main():
             "senderRoutingNum": "15453525",
             "receiverRoutingNum": "44444444",
             "currency": "USD",
-            "amt": x,
+            "amt": 100,
             "mutations": []
         }
 
