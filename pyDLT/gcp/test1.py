@@ -46,10 +46,12 @@ async def main():
             "transactionID": client.incr('transaction').zfill(7),
             "senderAcctNum": "0001",
             "receiverAcctNum": "0001",
-            "senderRoutingNum": "00010001",
-            "receiverRoutingNum": "00020001",
+            "senderRoutingNum": "0001",
+            "receiverRoutingNum": "0002",
             "currency": "USD",
+            "initial_amt": 100,
             "amt": 100,
+            "instrument": "credit",
             "mutations": []
         }
 
