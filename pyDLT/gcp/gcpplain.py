@@ -1,14 +1,17 @@
 import faust
 from typing import List
 import time
-import redis
+from aredis import StrictRedis
 
 # faust -A gcpplain worker -l info --web-port 6067
-r = redis.StrictRedis(host='localhost', port=6379,
-                      password="", decode_responses=True)
+# r = redis.StrictRedis(host='localhost', port=6379,
+#                       password="", decode_responses=True)
 # r.delete("gte", "lt")
 app = faust.App('myapp1',
                 broker='kafka://34.74.80.207:39092;kafka://131.247.3.206:9092')
+client = StrictRedis(host='127.0.0.1',
+                     port=6379,
+                     db=0)
 
 
 # Models describe how messages are serialized:
@@ -29,12 +32,6 @@ x = List[str]
 initiated_topic = app.topic('initiated_transactions',
                             key_type=bytes,
                             value_type=initiated)
-# gte10k = app.topic('gte10k',
-#                    key_type=bytes,
-#                    value_type=initiated)
-# lt10k = app.topic('lt10k',
-#                   key_type=bytes,
-#                   value_type=initiated)
 
 settled = app.topic('settled_transactions',
                     key_type=bytes,
@@ -49,7 +46,7 @@ debtor_agent = app.channel()  # in-memory buffer
 async def process(transactions):
     async for transaction in transactions:
         if transaction.amt >= 10000:
-            over10k.append([time.time(), transaction])
+            # over10k.append([time.time(), transaction])
             await debtor_agent.send(value=transaction)
         else:
             await debtor_agent.send(value=transaction)
