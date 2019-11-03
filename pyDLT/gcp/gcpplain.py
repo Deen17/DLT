@@ -30,8 +30,8 @@ class initiated(faust.Record, serializer='json'):
 
 
 bank_switcher = {
-        1: "bankA",
-        2: "bankB"
+    1: "bankA",
+    2: "bankB"
 }
 
 initiated_topic = app.topic('initiated_transactions',
@@ -43,15 +43,14 @@ settled = app.topic('settled_transactions',
                     value_type=initiated)
 
 bankA_DA = app.topic('bankA_DA',
-                    key_type=bytes,
-                    value_type=initiated)
+                     key_type=bytes,
+                     value_type=initiated)
 
 bankB_DA = app.topic('bankB_DA',
-                    key_type=bytes,
-                    value_type=initiated)
+                     key_type=bytes,
+                     value_type=initiated)
 
 over10k = []
-
 
 
 debtor_agent = app.channel()  # in-memory buffer
@@ -60,32 +59,38 @@ debtor_agent = app.channel()  # in-memory buffer
 @app.agent(initiated_topic)
 async def process(transactions):
     async for transaction in transactions:
-        await app.topic(bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA",
+        datopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA"
+        await app.topic(datopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
-
 
 
 @app.agent(bankA_DA)
-async def discount(transactions):
+async def bankA_DA_process(transactions):
     async for transaction in transactions:
         take = transaction.amt * .1
         message = "bankA_DA took %f of %f" % (take, transaction.amt)
-        # here
+        bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
+        await client.hincrbyfloat(bankacc,
+                                  "balance",
+                                  take)
         transaction.mutations.append(message)
         transaction.amt -= take
-        await app.topic(bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA",
+        catopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_CA"
+        await app.topic(catopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
 
+
 @app.agent(bankB_DA)
-async def discount(transactions):
+async def bankB_DA_process(transactions):
     async for transaction in transactions:
         take = transaction.amt * .1
         message = "bankB_DA took %f of %f" % (take, transaction.amt)
         transaction.mutations.append(message)
         transaction.amt -= take
-        await app.topic(bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA",
+        catopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_CA"
+        await app.topic(catopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
 
