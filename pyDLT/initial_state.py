@@ -37,7 +37,7 @@ async def setInitialState():
         "name": "bankB",
         "balance": 0
     }
-    await client.incr('transaction')
+    # await client.incr('transaction')
     await client.hmset("user:" + user1dict["routingNo"] + user1dict["accNo"],
                        user1balance)
     await client.hmset("user:" + user2dict["routingNo"] + user2dict["accNo"],

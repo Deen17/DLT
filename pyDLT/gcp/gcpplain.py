@@ -1,6 +1,6 @@
 import faust
 from typing import List
-import time
+# import time
 from aredis import StrictRedis
 
 # faust -A gcpplain worker -l info --web-port 6067
@@ -50,6 +50,14 @@ bankB_DA = app.topic('bankB_DA',
                      key_type=bytes,
                      value_type=initiated)
 
+bankA_CA = app.topic('bankA_CA',
+                     key_type=bytes,
+                     value_type=initiated)
+
+bankB_CA = app.topic('bankB_CA',
+                     key_type=bytes,
+                     value_type=initiated)
+
 over10k = []
 
 
@@ -68,15 +76,16 @@ async def process(transactions):
 @app.agent(bankA_DA)
 async def bankA_DA_process(transactions):
     async for transaction in transactions:
-        take = transaction.amt * .1
+        take = transaction.amt * .5
         message = "bankA_DA took %f of %f" % (take, transaction.amt)
-        bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
+        bankacc = "user:{}0000".format(transaction.senderRoutingNum)
         await client.hincrbyfloat(bankacc,
                                   "balance",
                                   take)
         transaction.mutations.append(message)
         transaction.amt -= take
-        catopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_CA"
+        catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
+        catopic += "_CA"
         await app.topic(catopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
@@ -85,14 +94,47 @@ async def bankA_DA_process(transactions):
 @app.agent(bankB_DA)
 async def bankB_DA_process(transactions):
     async for transaction in transactions:
-        take = transaction.amt * .1
+        take = transaction.amt * .5
         message = "bankB_DA took %f of %f" % (take, transaction.amt)
+        bankacc = "user:{}0000".format(transaction.senderRoutingNum)
+        await client.hincrbyfloat(bankacc,
+                                  "balance",
+                                  take)
         transaction.mutations.append(message)
         transaction.amt -= take
-        catopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_CA"
+        catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
+        catopic += "_CA"
         await app.topic(catopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
+
+
+@app.agent(bankA_CA)
+async def bankA_CA_process(transactions):
+    async for transaction in transactions:
+        take = transaction.initial_amt * .5
+        message = "bankA_CA took %f of %f" % (take, transaction.initial_amt)
+        bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
+        await client.hincrbyfloat(bankacc,
+                                  "balance",
+                                  take)
+        transaction.mutations.append(message)
+        transaction.amt -= take
+        await settled.send(value=transaction)
+
+
+@app.agent(bankB_CA)
+async def bankB_CA_process(transactions):
+    async for transaction in transactions:
+        take = transaction.initial_amt * .5
+        message = "bankB_CA took %f of %f" % (take, transaction.initial_amt)
+        bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
+        await client.hincrbyfloat(bankacc,
+                                  "balance",
+                                  take)
+        transaction.mutations.append(message)
+        transaction.amt -= take
+        await settled.send(value=transaction)
 
 
 # @app.timer(interval=1)
@@ -110,7 +152,7 @@ async def bankB_DA_process(transactions):
 @app.agent(settled)
 async def print_finalized(transactions):
     async for tx in transactions:
-        print(time.time())
+        # print(time.time())
         # if(r.incr('total') % 200 == 0):
         print(tx)
 

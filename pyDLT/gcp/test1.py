@@ -43,7 +43,7 @@ async def main():
         # x = random.randint(0, 20000)
 
         value = {
-            "transactionID": client.incr('transaction').zfill(7),
+            "transactionID": str(client.incr('transaction')).zfill(7),
             "senderAcctNum": "0001",
             "receiverAcctNum": "0001",
             "senderRoutingNum": "0001",
@@ -54,7 +54,7 @@ async def main():
             "instrument": "credit",
             "mutations": []
         }
-
+        
         b = json.dumps(value).encode('utf-8')
         producer.produce('initiated_transactions',
                          # key='1'.encode('utf-8'),

@@ -2,26 +2,29 @@ from confluent_kafka import Producer
 import json
 import asyncio
 import time
+import redis
 
 conf = {
     'bootstrap.servers': '34.74.80.207:39092,131.247.3.206:9092',
-    'client.id': 'test100',
+    'client.id': 'test1',
 }
 
 producer = Producer(conf)
+client = redis.StrictRedis(host='127.0.0.1',
+                           port=6379,
+                           db=0)
+# value = {
+#     "transactionID": "000000000000",
+#     "senderAcctNum": "161",
+#     "receiverAcctNum": "420",
+#     "senderRoutingNum": "15453525",
+#     "receiverRoutingNum": "44444444",
+#     "currency": "USD",
+#     "amt": 100,
+#     "mutations": []
+# }
 
-value = {
-    "transactionID": "000000000000",
-    "senderAcctNum": "161",
-    "receiverAcctNum": "420",
-    "senderRoutingNum": "15453525",
-    "receiverRoutingNum": "44444444",
-    "currency": "USD",
-    "amt": 100,
-    "mutations": []
-}
-
-b = json.dumps(value).encode('utf-8')
+# b = json.dumps(value).encode('utf-8')
 # value2 = json.loads(b.decode('utf-8'))
 
 
@@ -40,16 +43,18 @@ async def main():
         # x = random.randint(0, 20000)
 
         value = {
-            "transactionID": "000000000000",
-            "senderAcctNum": "161",
-            "receiverAcctNum": "420",
-            "senderRoutingNum": "15453525",
-            "receiverRoutingNum": "44444444",
+            "transactionID": str(client.incr('transaction')).zfill(7),
+            "senderAcctNum": "0001",
+            "receiverAcctNum": "0001",
+            "senderRoutingNum": "0001",
+            "receiverRoutingNum": "0002",
             "currency": "USD",
+            "initial_amt": 100,
             "amt": 100,
+            "instrument": "credit",
             "mutations": []
         }
-
+        
         b = json.dumps(value).encode('utf-8')
         producer.produce('initiated_transactions',
                          # key='1'.encode('utf-8'),
