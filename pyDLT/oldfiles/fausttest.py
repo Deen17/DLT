@@ -31,16 +31,17 @@ lt10k = app.topic('lt10k',
                   key_type=bytes,
                   value_type=initiated)
 
+# settled = app.topic('settled_transactions',
+#                   key_type=bytes,
+#                   value_type=initiated)
+
 
 @app.agent(initiated_topic)
 async def process(transactions):
     lt = gte = 0
-    sum=0
     async for transaction in transactions:
         # process infinite stream of orders.
         # print(transaction, transaction.amt)
-
-        sum=sum+1
         if transaction.amt >= 10000:
             gte = r.incr("gte")
             await gte10k.send(value=transaction)
