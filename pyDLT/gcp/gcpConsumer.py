@@ -3,9 +3,9 @@ import sys
 import time
 
 conf = {
-        'bootstrap.servers': "34.74.80.207:39092,131.247.3.206:9092",
-        'group.id': "settledGroup1",
-        'default.topic.config': {'auto.offset.reset': 'smallest'}}
+    'bootstrap.servers': "34.74.80.207:39092,131.247.3.206:9092",
+    'group.id': "settledGroup1",
+    'default.topic.config': {'auto.offset.reset': 'smallest'}}
 
 consumer = Consumer(conf)
 consumer.subscribe([sys.argv[1]])
@@ -22,7 +22,7 @@ try:
         if msg.error():
             print("Consumer error: {}".format(msg.error()))
             continue
-        
+
         counter += 1
         print("counter %d" % counter)
         print('Received message: {}'.format(msg.value().decode('utf-8')))
