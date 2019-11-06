@@ -54,7 +54,7 @@ async def main():
             "instrument": "credit",
             "mutations": []
         }
-        
+
         b = json.dumps(value).encode('utf-8')
         producer.produce('initiated_transactions',
                          # key='1'.encode('utf-8'),
