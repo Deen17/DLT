@@ -52,6 +52,7 @@ async def main():
             "initial_amt": 100,
             "amt": 100,
             "instrument": "credit",
+            "settled": "False",
             "mutations": []
         }
 

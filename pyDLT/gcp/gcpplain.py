@@ -26,7 +26,24 @@ class initiated(faust.Record, serializer='json'):
     initial_amt: float
     amt: float
     instrument: str
-    mutations: List[str]
+    settled: bool
+    mutations: List[dict]
+
+
+def user_to_dict(transaction: initiated):
+    data = {
+        'transactionID': transaction.transactionID,
+        'senderAcctNum': transaction.senderAcctNum,
+        'senderRoutingNum': transaction.senderRoutingNum,
+        'receiverAcctNum': transaction.receiverAcctNum,
+        'receiverRoutingNum': transaction.receiverRoutingNum,
+        'currency': transaction.currency,
+        'instrument': transaction.instrument,
+        'initial_amt': transaction.initial_amt,
+        'amt': transaction.amt,
+        'mutations': transaction.mutations
+    }
+    return data
 
 
 bank_switcher = {
@@ -77,13 +94,14 @@ async def process(transactions):
 async def bankA_DA_process(transactions):
     async for transaction in transactions:
         take = transaction.amt * .5
-        message = "bankA_DA took %f of %f" % (take, transaction.amt)
+        # message = "bankA_DA took %f of %f" % (take, transaction.amt)
         bankacc = "user:{}0000".format(transaction.senderRoutingNum)
-        await client.hincrbyfloat(bankacc,
-                                  "balance",
-                                  take)
+        message = {bankacc: take}
+        # await client.hincrbyfloat(bankacc,
+        #                           "balance",
+        #                           take)
         transaction.mutations.append(message)
-        transaction.amt -= take
+        transaction.initial_amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
         catopic += "_CA"
         await app.topic(catopic,
@@ -93,14 +111,15 @@ async def bankA_DA_process(transactions):
 
 @app.agent(bankB_DA)
 async def bankB_DA_process(transactions):
+    """bankB's Debtor Agent takes 50% of a transaction's initial amount"""
     async for transaction in transactions:
-        take = transaction.amt * .5
-        message = "bankB_DA took %f of %f" % (take, transaction.amt)
+        take = transaction.initial_amt * .5
         bankacc = "user:{}0000".format(transaction.senderRoutingNum)
-        await client.hincrbyfloat(bankacc,
-                                  "balance",
-                                  take)
-        transaction.mutations.append(message)
+        mutation = {bankacc: take}
+        # await client.hincrbyfloat(bankacc,
+        #                           "balance",
+        #                           take)
+        transaction.mutations.append(mutation)
         transaction.amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
         catopic += "_CA"
@@ -113,12 +132,13 @@ async def bankB_DA_process(transactions):
 async def bankA_CA_process(transactions):
     async for transaction in transactions:
         take = transaction.initial_amt * .5
-        message = "bankA_CA took %f of %f" % (take, transaction.initial_amt)
+        # message = "bankA_CA took %f of %f" % (take, transaction.initial_amt)
         bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
-        await client.hincrbyfloat(bankacc,
-                                  "balance",
-                                  take)
-        transaction.mutations.append(message)
+        mutation = {bankacc: take}
+        # await client.hincrbyfloat(bankacc,
+        #                           "balance",
+        #                           take)
+        transaction.mutations.append(mutation)
         transaction.amt -= take
         await settled.send(value=transaction)
 
@@ -127,34 +147,36 @@ async def bankA_CA_process(transactions):
 async def bankB_CA_process(transactions):
     async for transaction in transactions:
         take = transaction.initial_amt * .5
-        message = "bankB_CA took %f of %f" % (take, transaction.initial_amt)
+        # message = "bankB_CA took %f of %f" % (take, transaction.initial_amt)
         bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
-        await client.hincrbyfloat(bankacc,
-                                  "balance",
-                                  take)
-        transaction.mutations.append(message)
+        mutation = {bankacc: take}
+        # await client.hincrbyfloat(bankacc,
+        #                           "balance",
+        #                           take)
+        transaction.mutations.append(mutation)
         transaction.amt -= take
         await settled.send(value=transaction)
 
 
-# @app.timer(interval=1)
-# async def check10Queue():
-#     if(len(over10k) > 0):
-#         for i in range(len(over10k)):
-#             if(over10k[i][0] + 10 < time.time()):
-#                 await debtor_agent.send(value=over10k.pop(i)[1])
-#     # if len(over10k) > 0:
-#     #     if over10k[0][0] + 10 < time.time():
-#     #         await debtor_agent.send(value=over10k.pop(0)[1])
-#     #         # await settled.send(value=over10k.pop(0)[1])
-
-
 @app.agent(settled)
-async def print_finalized(transactions):
+async def process_settled(transactions):
     async for tx in transactions:
-        # print(time.time())
-        # if(r.incr('total') % 200 == 0):
-        print(tx)
+        async with await client.pipeline() as pipe:
+            for mutation in tx.mutations:
+                for key, value in mutation:
+                    if key[0:5] == "user:":
+                        bankacc = key[-8:]
+                        await client.hincrbyfloat(bankacc,
+                                                  "balance",
+                                                  int(value))
+                        continue
+                    else:
+                        pass
+            tx.settled = True
+            await pipe.hmset(user_to_dict(tx))  # convert tx to a dict
+            res = await pipe.execute()
+            print(res)
+
 
 if __name__ == '__main__':
     app.main()

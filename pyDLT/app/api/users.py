@@ -12,7 +12,7 @@ async def get_user_transactions(id):
     pass
 
 
-@bp.route('/users/transaction', methods=['POST'])
+@bp.route('/users/transaction/<int:id>', methods=['POST'])
 async def post_transaction(id):
     pass
 
@@ -25,3 +25,8 @@ async def get_bank_users(id):
 @bp.route('/banks/<int:id>', methods=['GET'])
 async def get_bank(id):
     pass
+
+
+@bp.route('/', methods=['GET'])
+def default():
+    return 'API'
