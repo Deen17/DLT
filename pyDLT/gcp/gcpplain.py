@@ -1,14 +1,15 @@
+# how to run this
+# go to directory local to this file, then run:
+# faust -A gcpplain worker -l info --web-port 6067
 import faust
 from typing import List
 # import time
 from aredis import StrictRedis
 
-# faust -A gcpplain worker -l info --web-port 6067
-# r = redis.StrictRedis(host='localhost', port=6379,
-#                       password="", decode_responses=True)
-# r.delete("gte", "lt")
+
+bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092'
 app = faust.App('myapp1',
-                broker='kafka://34.74.80.207:39092;kafka://131.247.3.206:9092')
+                broker=bootstrap)
 client = StrictRedis(host='127.0.0.1',
                      port=6379,
                      db=0)
@@ -26,7 +27,24 @@ class initiated(faust.Record, serializer='json'):
     initial_amt: float
     amt: float
     instrument: str
-    mutations: List[str]
+    settled: bool
+    mutations: List[dict]
+
+
+def user_to_dict(transaction: initiated):
+    data = {
+        'transactionID': transaction.transactionID,
+        'senderAcctNum': transaction.senderAcctNum,
+        'senderRoutingNum': transaction.senderRoutingNum,
+        'receiverAcctNum': transaction.receiverAcctNum,
+        'receiverRoutingNum': transaction.receiverRoutingNum,
+        'currency': transaction.currency,
+        'instrument': transaction.instrument,
+        'initial_amt': transaction.initial_amt,
+        'amt': transaction.amt,
+        'mutations': transaction.mutations
+    }
+    return data
 
 
 bank_switcher = {
@@ -68,6 +86,7 @@ debtor_agent = app.channel()  # in-memory buffer
 async def process(transactions):
     async for transaction in transactions:
         datopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA"
+        # send this transaction to its appropriate sender's bank
         await app.topic(datopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
@@ -75,13 +94,13 @@ async def process(transactions):
 
 @app.agent(bankA_DA)
 async def bankA_DA_process(transactions):
+    """ The Sender's Bank can choose to take some percentage of the initial amount.
+    This process then deducts that amount from the amount, then route the transaction
+    to the Receiver's Bank"""
     async for transaction in transactions:
-        take = transaction.amt * .5
-        message = "bankA_DA took %f of %f" % (take, transaction.amt)
+        take = transaction.initial_amt * .5
         bankacc = "user:{}0000".format(transaction.senderRoutingNum)
-        await client.hincrbyfloat(bankacc,
-                                  "balance",
-                                  take)
+        message = {bankacc: take}
         transaction.mutations.append(message)
         transaction.amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
@@ -93,14 +112,14 @@ async def bankA_DA_process(transactions):
 
 @app.agent(bankB_DA)
 async def bankB_DA_process(transactions):
+    """ The Sender's Bank can choose to take some percentage of the initial amount.
+    This process then deducts that amount from the amount, then route the transaction
+    to the Receiver's Bank"""
     async for transaction in transactions:
-        take = transaction.amt * .5
-        message = "bankB_DA took %f of %f" % (take, transaction.amt)
+        take = transaction.initial_amt * .5
         bankacc = "user:{}0000".format(transaction.senderRoutingNum)
-        await client.hincrbyfloat(bankacc,
-                                  "balance",
-                                  take)
-        transaction.mutations.append(message)
+        mutation = {bankacc: take}
+        transaction.mutations.append(mutation)
         transaction.amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
         catopic += "_CA"
@@ -111,50 +130,71 @@ async def bankB_DA_process(transactions):
 
 @app.agent(bankA_CA)
 async def bankA_CA_process(transactions):
+    """The Creditor Agent processes this transaction. Here, it has the chance
+    to take some percentage of of the initial amount, as well. Just for fun."""
     async for transaction in transactions:
         take = transaction.initial_amt * .5
-        message = "bankA_CA took %f of %f" % (take, transaction.initial_amt)
         bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
-        await client.hincrbyfloat(bankacc,
-                                  "balance",
-                                  take)
-        transaction.mutations.append(message)
+        mutation = {bankacc: take}
+        transaction.mutations.append(mutation)
         transaction.amt -= take
         await settled.send(value=transaction)
 
 
 @app.agent(bankB_CA)
 async def bankB_CA_process(transactions):
+    """The Creditor Agent processes this transaction. Here, it has the chance
+    to take some percentage of of the initial amount, as well. Just for fun."""
     async for transaction in transactions:
         take = transaction.initial_amt * .5
-        message = "bankB_CA took %f of %f" % (take, transaction.initial_amt)
         bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
-        await client.hincrbyfloat(bankacc,
-                                  "balance",
-                                  take)
-        transaction.mutations.append(message)
+        mutation = {bankacc: take}
+        transaction.mutations.append(mutation)
         transaction.amt -= take
         await settled.send(value=transaction)
 
 
-# @app.timer(interval=1)
-# async def check10Queue():
-#     if(len(over10k) > 0):
-#         for i in range(len(over10k)):
-#             if(over10k[i][0] + 10 < time.time()):
-#                 await debtor_agent.send(value=over10k.pop(i)[1])
-#     # if len(over10k) > 0:
-#     #     if over10k[0][0] + 10 < time.time():
-#     #         await debtor_agent.send(value=over10k.pop(0)[1])
-#     #         # await settled.send(value=over10k.pop(0)[1])
-
-
 @app.agent(settled)
-async def print_finalized(transactions):
+async def process_settled(transactions):
+    """This function will cause all of the state changes to accounts."""
     async for tx in transactions:
-        # print(time.time())
-        # if(r.incr('total') % 200 == 0):
-        print(tx)
+        async with await client.pipeline() as pipe:
+            for mutation in tx.mutations:
+                for key, value in mutation.items():
+                    if key[0:5] == "user:":
+                        bankacc = key[-8:]
+                        await pipe.hincrbyfloat(bankacc,
+                                                "balance",
+                                                int(value))
+                        continue
+                    else:
+                        pass
+            senderID = "user:{}{}".format(tx.senderRoutingNum,
+                                          tx.senderAcctNum)
+            receiverID = "user:{}{}".format(tx.receiverRoutingNum,
+                                            tx.receiverAcctNum)
+            take = float(tx.initial_amt) * -1
+            give = float(tx.amt)
+            # take the initial amount from the sender
+            await pipe.hincrbyfloat(senderID,
+                                    "balance",
+                                    take)
+            # give the final amount to the receiver
+            await pipe.hincrbyfloat(receiverID,
+                                    "balance",
+                                    give)
+            tx.settled = True
+            transaction_name = "transactionID:{}".format(tx.transactionID)
+            ready_transaction = "ready:{}".format(tx.transactionID)
+            # set "transactionID:xxxxxxxx" to its final respective
+            # dictionary state in Redis
+            await pipe.hmset(transaction_name, user_to_dict(tx))
+            # push to the ready queue for this transaction
+            await pipe.rpush(ready_transaction, 0)
+            # execute the entire transaction/pipeline
+            res = await pipe.execute()
+            print(res)
+
 
 if __name__ == '__main__':
     app.main()
