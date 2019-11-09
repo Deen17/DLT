@@ -42,6 +42,7 @@ def to_dict(transaction: initiated):
         'instrument': transaction.instrument,
         'initial_amt': transaction.initial_amt,
         'amt': transaction.amt,
+        'settled': transaction.settled,
         'mutations': transaction.mutations
     }
     return data
