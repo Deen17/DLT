@@ -3,12 +3,12 @@ import asyncio
 
 
 @bp.route('/users/<int:id>', methods=['GET'])
-async def get_user(id):
+async def get_user_details(id):
     pass
 
 
 @bp.route('/users/<int:id>/transactions', methods=['GET'])
-async def get_user_transactions(id):
+async def get_user_transaction_list(id):
     pass
 
 
