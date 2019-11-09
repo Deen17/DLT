@@ -31,7 +31,7 @@ class initiated(faust.Record, serializer='json'):
     mutations: List[dict]
 
 
-def user_to_dict(transaction: initiated):
+def to_dict(transaction: initiated):
     data = {
         'transactionID': transaction.transactionID,
         'senderAcctNum': transaction.senderAcctNum,
@@ -95,8 +95,8 @@ async def process(transactions):
 @app.agent(bankA_DA)
 async def bankA_DA_process(transactions):
     """ The Sender's Bank can choose to take some percentage of the initial amount.
-    This process then deducts that amount from the amount, then route the transaction
-    to the Receiver's Bank"""
+    This process then deducts that amount from the amount,
+    then route the transaction to the Receiver's Bank"""
     async for transaction in transactions:
         take = transaction.initial_amt * .5
         bankacc = "user:{}0000".format(transaction.senderRoutingNum)
@@ -113,8 +113,8 @@ async def bankA_DA_process(transactions):
 @app.agent(bankB_DA)
 async def bankB_DA_process(transactions):
     """ The Sender's Bank can choose to take some percentage of the initial amount.
-    This process then deducts that amount from the amount, then route the transaction
-    to the Receiver's Bank"""
+    This process then deducts that amount from the amount,
+    then route the transaction to the Receiver's Bank"""
     async for transaction in transactions:
         take = transaction.initial_amt * .5
         bankacc = "user:{}0000".format(transaction.senderRoutingNum)
@@ -188,7 +188,7 @@ async def process_settled(transactions):
             ready_transaction = "ready:{}".format(tx.transactionID)
             # set "transactionID:xxxxxxxx" to its final respective
             # dictionary state in Redis
-            await pipe.hmset(transaction_name, user_to_dict(tx))
+            await pipe.hmset(transaction_name, to_dict(tx))
             # push to the ready queue for this transaction
             await pipe.rpush(ready_transaction, 0)
             # execute the entire transaction/pipeline
