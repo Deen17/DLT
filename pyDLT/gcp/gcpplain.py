@@ -167,6 +167,8 @@ async def process_settled(transactions):
                         await pipe.hincrbyfloat(bankacc,
                                                 "balance",
                                                 int(value))
+                        transaction_set = "transactions:{}".format(bankacc)
+                        # await pipe.zadd()
                         continue
                     else:
                         pass
@@ -190,6 +192,9 @@ async def process_settled(transactions):
             # set "transactionID:xxxxxxxx" to its final respective
             # dictionary state in Redis
             await pipe.hmset(transaction_name, to_dict(tx))
+
+            for user in [senderID, receiverID]:
+                pass
             # push to the ready queue for this transaction
             await pipe.rpush(ready_transaction, 0)
             # execute the entire transaction/pipeline
