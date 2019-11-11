@@ -12,11 +12,21 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatInputModule} from '@angular/material/input';
 
 import { LoginComponent } from './login/login.component';
+import { BankComponent } from './bank/bank.component';
+import { UserListComponent } from './user-list/user-list.component';
+import { AccountComponent } from './account/account.component';
+import { TransactionListComponent } from './transaction-list/transaction-list.component';
+import { CreateTransactionComponent } from './create-transaction/create-transaction.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent
+    LoginComponent,
+    BankComponent,
+    UserListComponent,
+    AccountComponent,
+    TransactionListComponent,
+    CreateTransactionComponent
   ],
   imports: [
     BrowserModule,
