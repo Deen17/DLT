@@ -11,10 +11,12 @@ r = StrictRedis(
     decode_responses=True
 )
 
+
 @app.route('/')
 async def hello():
     await asyncio.sleep(1)
     return 'hello'
+
 
 @app.route('/users/<string:id>', methods=['GET'])
 async def get_user_details_by_userid(id):
@@ -40,6 +42,7 @@ async def post_transaction():
     # return redirect(url_for('/'))
     data = await request.get_json()
     return redirect('/')
+
 
 @app.route('/transaction_response')
 async def transaction_response():
