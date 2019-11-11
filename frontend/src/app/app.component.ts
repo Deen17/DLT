@@ -10,7 +10,7 @@ import { RedisService } from './redis.service';
 export class AppComponent implements OnInit {
   title = 'frontend';
   isLoggedIn = false;
-  isBank = true;
+  isBank = false;
 
   constructor(
     private router: Router,
@@ -22,6 +22,9 @@ export class AppComponent implements OnInit {
     console.log(await this.redis.startup);
     if (!this.isLoggedIn) {
       this.router.navigate(['login']);
+    }
+    else if(this.isBank){
+      this.router.navigate(['bank']);
     }
   }
 }
