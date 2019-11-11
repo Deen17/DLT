@@ -168,7 +168,7 @@ async def process_settled(transactions):
                 for key, value in mutation.items():
                     if key[0:5] == "user:":
                         bankacc = key[-8:]
-                        await pipe.hincrbyfloat(bankacc,
+                        await pipe.hincrbyfloat(key,
                                                 "balance",
                                                 int(value))
                         # add transaction to set of transactions under bank
