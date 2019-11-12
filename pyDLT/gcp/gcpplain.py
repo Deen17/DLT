@@ -42,6 +42,7 @@ def to_dict(transaction: initiated):
         'instrument': transaction.instrument,
         'initial_amt': transaction.initial_amt,
         'amt': transaction.amt,
+        'settled': transaction.settled,
         'mutations': transaction.mutations
     }
     return data
@@ -75,7 +76,6 @@ bankA_CA = app.topic('bankA_CA',
 bankB_CA = app.topic('bankB_CA',
                      key_type=bytes,
                      value_type=initiated)
-
 over10k = []
 
 
@@ -87,6 +87,7 @@ async def process(transactions):
     async for transaction in transactions:
         datopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA"
         # send this transaction to its appropriate sender's bank
+        # await app.commit("initiated_transactions")
         await app.topic(datopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
@@ -105,6 +106,7 @@ async def bankA_DA_process(transactions):
         transaction.amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
         catopic += "_CA"
+        # await app.commit("bankA_DA")
         await app.topic(catopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
@@ -123,6 +125,7 @@ async def bankB_DA_process(transactions):
         transaction.amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
         catopic += "_CA"
+        # await app.commit("bankB_DA")
         await app.topic(catopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
@@ -138,6 +141,7 @@ async def bankA_CA_process(transactions):
         mutation = {bankacc: take}
         transaction.mutations.append(mutation)
         transaction.amt -= take
+        # await app.commit("bankA_CA")
         await settled.send(value=transaction)
 
 
@@ -151,6 +155,7 @@ async def bankB_CA_process(transactions):
         mutation = {bankacc: take}
         transaction.mutations.append(mutation)
         transaction.amt -= take
+        # await app.commit("bankB_CA")
         await settled.send(value=transaction)
 
 
@@ -163,9 +168,16 @@ async def process_settled(transactions):
                 for key, value in mutation.items():
                     if key[0:5] == "user:":
                         bankacc = key[-8:]
-                        await pipe.hincrbyfloat(bankacc,
+                        await pipe.hincrbyfloat(key,
                                                 "balance",
                                                 int(value))
+                        # add transaction to set of transactions under bank
+                        # user account
+                        transaction_set = "transactions:{}".format(bankacc)
+                        await pipe.zadd(
+                            transaction_set,
+                            tx.transactionID,
+                            tx.transactionID)
                         continue
                     else:
                         pass
@@ -189,9 +201,20 @@ async def process_settled(transactions):
             # set "transactionID:xxxxxxxx" to its final respective
             # dictionary state in Redis
             await pipe.hmset(transaction_name, to_dict(tx))
+            sender_set = "transactions:{}{}".format(tx.senderRoutingNum,
+                                                    tx.senderAcctNum)
+            receiver_set = "transactions:{}{}".format(tx.receiverRoutingNum,
+                                                      tx.receiverAcctNum)
+            for user_set in [sender_set, receiver_set]:
+                await pipe.zadd(
+                    user_set,
+                    tx.transactionID,
+                    tx.transactionID
+                )
             # push to the ready queue for this transaction
             await pipe.rpush(ready_transaction, 0)
             # execute the entire transaction/pipeline
+            # await app.commit('settled_transactions')
             res = await pipe.execute()
             print(res)
 
