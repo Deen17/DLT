@@ -13,6 +13,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatSelectModule} from '@angular/material/select';
 import {MatTableModule} from '@angular/material/table';
+import {MatTabsModule} from '@angular/material/tabs';
 
 import { LoginComponent } from './login/login.component';
 import { BankComponent } from './bank/bank.component';
@@ -21,6 +22,7 @@ import { AccountComponent } from './account/account.component';
 import { TransactionListComponent } from './transaction-list/transaction-list.component';
 import { CreateTransactionComponent } from './create-transaction/create-transaction.component';
 import { TransactionComponent } from './transaction/transaction.component';
+import { UserComponent } from './user/user.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +33,8 @@ import { TransactionComponent } from './transaction/transaction.component';
     AccountComponent,
     TransactionListComponent,
     CreateTransactionComponent,
-    TransactionComponent
+    TransactionComponent,
+    UserComponent
   ],
   imports: [
     BrowserModule,
@@ -44,7 +47,8 @@ import { TransactionComponent } from './transaction/transaction.component';
     MatInputModule,
     MatDividerModule,
     MatSelectModule,
-    MatTableModule
+    MatTableModule,
+    MatTabsModule
     
   ],
   providers: [],
