@@ -7,9 +7,8 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class RedisService {
-  // client: redis.RedisClient;
-  // redis: typeof redis;
-
+  apiUrlHttps = 'https://localhost:8443'
+  apiUrlHttp = 'http://localhost:8080'
   constructor() {
   }
 
