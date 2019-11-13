@@ -26,8 +26,8 @@ var app = express()
 
 //redis client
 let client = redis.createClient(
-    6379,
-    '127.0.0.1'
+    config.redisOptions.port,
+    config.redisOptions.ip, //'127.0.0.1'
 )
 
 //kafka client

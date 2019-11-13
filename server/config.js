@@ -6,5 +6,10 @@ module.exports={
     },
     credentials: {
         passphrase: 'jpmdlt'
-    }
+    },
+    redisOptions: {
+        port: 6379,
+        ip: '104.196.105.254',
+    },
+    
 }
