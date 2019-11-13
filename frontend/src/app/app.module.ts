@@ -12,6 +12,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatInputModule} from '@angular/material/input';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatSelectModule} from '@angular/material/select';
+import {MatTableModule} from '@angular/material/table';
 
 import { LoginComponent } from './login/login.component';
 import { BankComponent } from './bank/bank.component';
@@ -42,7 +43,8 @@ import { TransactionComponent } from './transaction/transaction.component';
     MatButtonModule,
     MatInputModule,
     MatDividerModule,
-    MatSelectModule
+    MatSelectModule,
+    MatTableModule
     
   ],
   providers: [],
