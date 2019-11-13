@@ -1,7 +1,7 @@
 let config = require('./config')
 let express = require('express')
 let kafka = require('kafka-node')
-// var cors = require('cors')
+var cors = require('cors')
 const bodyParser = require('body-parser')
 // const {promisify} = require('util')
 // let redis = require('redis')
@@ -12,7 +12,7 @@ var fs = require('fs'),
     https = require('https'),
     http = require('http')
 
-var forceSSL  = require('express-force-ssl')
+var forceSSL = require('express-force-ssl')
 
 var privateKey = fs.readFileSync('../ssl/unsignedserver.key', 'utf8')
 var certificate = fs.readFileSync('../ssl/unsignedserver.pem', 'utf8')
@@ -34,18 +34,20 @@ let client = redis.createClient(
 let HighLevelProducer = kafka.HighLevelProducer,
     kafkaClient = new kafka.KafkaClient({
         kafkaHost: '34.74.80.207:39092,131.247.3.206:9092',
-        // rejectUnauthorized: false,
-        // ca: [fs.readFileSync('./bin/chain.pem', 'utf-8')],
-        // cert: [fs.readFileSync('./bin/kafkaadmin.pem', 'utf-8')],
-        // key: [fs.readFileSync('./bin/kafkaadmin.key', 'utf-8')],
-        // passphrase: "mypass",
+        // sslOptions: {
+        //     // rejectUnauthorized: false,
+        //     // ca: [fs.readFileSync('./bin/chain.pem', 'utf-8')],
+        //     // cert: [fs.readFileSync('./bin/kafkaadmin.pem', 'utf-8')],
+        //     // key: [fs.readFileSync('./bin/kafkaadmin.key', 'utf-8')],
+        //     // passphrase: "mypass",
+        // }
     }),
     producer = new HighLevelProducer(kafkaClient, {
         requireAcks: 1
     })
 
-// app.use(cors) //problematic
-// app.use(forceSSL)
+app.use(cors()) //problematic
+app.use(forceSSL)
 app.use(function (req, res, next) {
     let today = new Date();
     console.log(today.getMonth() + '/' +
@@ -161,7 +163,7 @@ app.post('/login', asyncMiddleware(async (req, res, next) => {
         req.body.username)
     let getPass = await client.hgetAsync(`user:${accNum}`, 'password')
     let response = {
-        'isBank': (parseInt(accNum) % 1000 ) == 0 ? true : false,
+        'isBank': (parseInt(accNum) % 1000) == 0 ? true : false,
         'verified': (req.body.password == getPass) ? true : false
     }
     console.log(response)

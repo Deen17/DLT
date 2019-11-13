@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit, OnChanges {
     }
     console.log(req)
     let response: Observable<LoginResponse> = this.http.post<LoginResponse>(
-      this.api.apiUrlHttps,
+      `${this.api.apiUrlHttps}/login`,
       req,
       httpOptions
     )

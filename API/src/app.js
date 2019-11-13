@@ -1,7 +1,7 @@
 let config = require('./config')
 let express = require('express')
 let kafka = require('kafka-node')
-// var cors = require('cors')
+var cors = require('cors')
 const bodyParser = require('body-parser')
 // const {promisify} = require('util')
 // let redis = require('redis')
@@ -45,8 +45,8 @@ let HighLevelProducer = kafka.HighLevelProducer,
         requireAcks: 1
     })
 
-// app.use(cors) //problematic
-// app.use(forceSSL)
+    app.use(cors()) //problematic
+app.use(forceSSL)
 app.use(function (req, res, next) {
     let today = new Date();
     console.log(today.getMonth() + '/' +

@@ -7,8 +7,8 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class RedisService {
-  apiUrlHttps = 'https://localhost:8443'
-  apiUrlHttp = 'http://localhost:8080'
+  apiUrlHttps = 'https://35.237.55.104:443'
+  apiUrlHttp = 'http://35.237.55.104:81'
   constructor() {
   }
 
