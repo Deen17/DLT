@@ -10,15 +10,14 @@
 <main>
 
   <div class="row">
-    <div *ngIf="isLoggedIn" class="column left">
-      
+    <div class="column left">
+
     </div>
+
     <div class="column middle">
       <router-outlet></router-outlet>
-      <app-transaction-list></app-transaction-list>
-      <!-- <app-user-list></app-user-list> -->
-      <app-create-transaction></app-create-transaction>
     </div>
+    
     <div class="column right">
 
     </div>

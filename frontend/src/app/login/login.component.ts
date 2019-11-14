@@ -37,7 +37,7 @@ export class LoginComponent implements OnInit {
     }
     this.buttonColor='primary'
     this.api.isBank = response.isBank
-    //this.api.loginSuccess.next(true)
+    this.api.loginSuccess.next(true)
     this.router.navigate(['account'])
   }
 

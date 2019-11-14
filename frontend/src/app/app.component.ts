@@ -38,7 +38,5 @@ export class AppComponent implements OnInit {
         this.setLoginStatus(result)
       }
     )
-
-    this.api.loginSuccess.next(false)
   }
 }
