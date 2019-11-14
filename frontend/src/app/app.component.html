@@ -1,5 +1,6 @@
 <!-- Toolbar -->
 <div class="toolbar" role="banner">
+    <mat-toolbar id="noneToolbar" *ngIf="!isLoggedIn" color="primary"></mat-toolbar>
     <mat-toolbar id="bankToolbar" *ngIf="isLoggedIn && isBank" color="primary">
     </mat-toolbar>
     <mat-toolbar id="userToolbar" *ngIf="isLoggedIn && !isBank" color="primary"></mat-toolbar>

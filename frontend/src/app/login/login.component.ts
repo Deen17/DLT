@@ -1,9 +1,7 @@
-import { Component, OnInit, OnChanges, ViewChild } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from "rxjs"
-import {retry, catchError} from 'rxjs/operators'
+import { Component, OnInit, ViewChild} from '@angular/core';
 import { ApiService } from '../api.service';
 import { ThemePalette } from '@angular/material/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -11,13 +9,13 @@ import { ThemePalette } from '@angular/material/core';
   styleUrls: ['./login.component.css'],
   providers: [ApiService]
 })
-export class LoginComponent implements OnInit, OnChanges {
+export class LoginComponent implements OnInit {
   @ViewChild('username') username;
   @ViewChild('password') password;
   buttonColor: ThemePalette = "primary"
   constructor(
-    private http: HttpClient,
-    private api: ApiService
+    private api: ApiService,
+    private router: Router
   ) { }
 
   async onSubmit() {
@@ -33,11 +31,14 @@ export class LoginComponent implements OnInit, OnChanges {
       
     let response = await this.api.login(req.username, req.password)
     console.log(response)
+    if(!response.verified){
+      this.buttonColor = 'warn'
+      return;
+    }
     this.buttonColor='primary'
-  }
-
-  ngOnChanges() {
-    console.log(Date.now())
+    this.api.isBank = response.isBank
+    //this.api.loginSuccess.next(true)
+    this.router.navigate(['account'])
   }
 
   ngOnInit() {
