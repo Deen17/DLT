@@ -12,8 +12,8 @@ var fs = require('fs'),
     https = require('https'),
     http = require('http')
 
-var forceSSL  = require('express-force-ssl')
-//console.log('dir', fs.readdirSync('./'))
+var forceSSL = require('express-force-ssl')
+//console.log('dir', fs.readdirSync('./')).
 
 var privateKey = fs.readFileSync('./ssl/unsignedserver.key', 'utf8')
 var certificate = fs.readFileSync('./ssl/unsignedserver.pem', 'utf8')
@@ -45,7 +45,7 @@ let HighLevelProducer = kafka.HighLevelProducer,
         requireAcks: 1
     })
 
-    app.use(cors()) //problematic
+app.use(cors()) //problematic
 app.use(forceSSL)
 app.use(function (req, res, next) {
     let today = new Date();
@@ -124,7 +124,7 @@ Response:
 */
 app.post('/users/transact', asyncMiddleware(async (req, res, next) => {
     console.log('POST /users/transact')
-    req.body['transactionID'] = (await client.incrAsync('transaction')).toString().padStart(7,'0')
+    req.body['transactionID'] = (await client.incrAsync('transaction')).toString().padStart(7, '0')
     console.log(req.body)
 
     // req.body['initial_amt']=req.body['initialamt']
@@ -163,7 +163,7 @@ app.post('/login', asyncMiddleware(async (req, res, next) => {
         req.body.username)
     let getPass = await client.hgetAsync(`user:${accNum}`, 'password')
     let response = {
-        'isBank': (parseInt(accNum) % 1000 ) == 0 ? true : false,
+        'isBank': (parseInt(accNum) % 1000) == 0 ? true : false,
         'verified': (req.body.password == getPass) ? true : false
     }
     console.log(response)
