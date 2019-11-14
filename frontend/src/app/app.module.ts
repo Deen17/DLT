@@ -49,7 +49,7 @@ import { UserComponent } from './user/user.component';
     MatDividerModule,
     MatSelectModule,
     MatTableModule,
-    MatTabsModule
+    MatTabsModule,
     HttpClientModule
   ],
   providers: [],
