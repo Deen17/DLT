@@ -1,7 +1,7 @@
 let config = require('./config')
 let express = require('express')
 let kafka = require('kafka-node')
-var cors = require('cors')
+// var cors = require('cors')
 const bodyParser = require('body-parser')
 // const {promisify} = require('util')
 // let redis = require('redis')
@@ -12,23 +12,19 @@ var fs = require('fs'),
     https = require('https'),
     http = require('http')
 
-var forceSSL  = require('express-force-ssl')
-//console.log('dir', fs.readdirSync('./'))
-
-var privateKey = fs.readFileSync('./ssl/unsignedserver.key', 'utf8')
-var certificate = fs.readFileSync('./ssl/unsignedserver.pem', 'utf8')
+var privateKey = fs.readFileSync('../ssl/ca.key', 'utf8')
+var certificate = fs.readFileSync('../ssl/ca.pem', 'utf8')
 var credentials = {
     key: privateKey,
-    cert: certificate,
-    passphrase: config.credentials.passphrase
+    cert: certificate
 }
 //express app
 var app = express()
 
 //redis client
 let client = redis.createClient(
-    config.redisOptions.port,
-    config.redisOptions.ip, //'127.0.0.1'
+    6379,
+    '127.0.0.1'
 )
 
 //kafka client
@@ -45,8 +41,7 @@ let HighLevelProducer = kafka.HighLevelProducer,
         requireAcks: 1
     })
 
-    app.use(cors()) //problematic
-app.use(forceSSL)
+// app.use(cors) //problematic
 app.use(function (req, res, next) {
     let today = new Date();
     console.log(today.getMonth() + '/' +
@@ -83,12 +78,6 @@ app.get('/users/:id', asyncMiddleware(async (req, res, next) => {
     res.send(userDetails)
 }))
 
-
-/*
-Get Users by Bank ID
-Params:
-
- */
 app.get('/banks/:bankid/users', asyncMiddleware(async (req, res, next) => {
     console.log(`GET /users/` + req.params.bankid)
     let users = await client.zrangeAsync(
@@ -100,31 +89,16 @@ app.get('/banks/:bankid/users', asyncMiddleware(async (req, res, next) => {
     })
 }))
 
-//posts
+// app.get('/', asyncMiddleware(async (req, res, next) => {
 
+// }))
+
+//posts
 /*
 http post :3000/users/transact transactionID="0000001" senderAcctNum="0001" receiverAcctNum="0001" senderRoutingNum="0001" receiverRoutingNum="0002" currency="USD" initial_amt:=100 amt:=100 instrument="credit" settled:=false mutations:='[]'
 */
-/*
-Create Transaction
-Params:
-    transactionID: string,
-    senderAcctNum: string,
-    receiverAcctNum: string,
-    senderRoutingNum: string,
-    recevierRoutingNum: string,
-    currency: string,
-    initial_amt: float,
-    amt: float,
-    instrument: string,
-    settled: boolean,
-    mutations: object (list)
-Response:
-    response: int (mostly just 0)
-*/
 app.post('/users/transact', asyncMiddleware(async (req, res, next) => {
     console.log('POST /users/transact')
-    req.body['transactionID'] = (await client.incrAsync('transaction')).toString().padStart(7,'0')
     console.log(req.body)
 
     // req.body['initial_amt']=req.body['initialamt']
@@ -147,28 +121,6 @@ app.post('/users/transact', asyncMiddleware(async (req, res, next) => {
     })
 }))
 
-/*
-Login method. 
-Params:
-    username: string,
-    password: string
-response:
-    isBank:  boolean,
-    verified: boolean
-*/
-app.post('/login', asyncMiddleware(async (req, res, next) => {
-    console.log('POST /login')
-    let accNum = await client.hgetAsync(
-        "usernames",
-        req.body.username)
-    let getPass = await client.hgetAsync(`user:${accNum}`, 'password')
-    let response = {
-        'isBank': (parseInt(accNum) % 1000 ) == 0 ? true : false,
-        'verified': (req.body.password == getPass) ? true : false
-    }
-    console.log(response)
-    res.send(response)
-}))
 
 
 // const server = app.listen(config.appServer.port, config.appServer.hostname, () => {
@@ -180,14 +132,14 @@ app.post('/login', asyncMiddleware(async (req, res, next) => {
 var httpServer = http.createServer(app);
 var httpsServer = https.createServer(credentials, app);
 
-httpServer.listen(8080, () => {
-    const host = httpServer.address().address;
-    const port = httpServer.address().port;
+httpServer.listen(8080, '127.0.0.1', () => {
+    const host = server.address().address;
+    const port = server.address().port;
     console.log(`DLT HTTP server listening at http://${host}:${port}`)
 })
-const PORT = 8443;
-httpsServer.listen(PORT, () => {
-    const host = httpsServer.address().address;
-    const port = httpsServer.address().port;
+
+httpsServer.listen(8443, '127.0.0.1', () => {
+    const host = server.address().address;
+    const port = server.address().port;
     console.log(`DLT HTTPS server listening at http://${host}:${port}`)
 })

@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ApiService } from './api.service';
+import { RedisService } from './redis.service';
 
-describe('ApiService', () => {
-  let service: ApiService;
+describe('RedisService', () => {
+  let service: RedisService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ApiService);
+    service = TestBed.inject(RedisService);
   });
 
   it('should be created', () => {

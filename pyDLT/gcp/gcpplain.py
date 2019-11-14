@@ -10,11 +10,9 @@ from aredis import StrictRedis
 bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092'
 app = faust.App('myapp1',
                 broker=bootstrap)
-client = StrictRedis(
-    # host='127.0.0.1',
-    host='104.196.105.254',
-    port=6379,
-    db=0)
+client = StrictRedis(host='127.0.0.1',
+                     port=6379,
+                     db=0)
 
 
 # Models describe how messages are serialized:

@@ -11,11 +11,9 @@ conf = {
 
 producer = Producer(conf)
 node1 = 'clustercfg.redis-cluster.drf52m.use1.cache.amazonaws.com'
-client = redis.StrictRedis(
-    # host='127.0.0.1',
-    host='104.196.105.254',
-    port=6379,
-    db=0)
+client = redis.StrictRedis(host='127.0.0.1',
+                           port=6379,
+                           db=0)
 
 # value = {
 #     "transactionID": "000000000000",
