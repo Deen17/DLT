@@ -1,0 +1,10 @@
+.example-container {
+    display:   flex;
+    flex-direction: row;
+    text-indent: 15%;
+  }
+  
+  .example-container > * {
+
+    width: 25%;
+  }
