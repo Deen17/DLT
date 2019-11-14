@@ -1,39 +1,36 @@
   .toolbar {
-    height: 60px;
-    margin: 0px;
-    display: flex;
-    align-items: center;
-    background-color: #1976d2;
-    color: white;
-    font-weight: 600;
+      height: 60px;
+      margin: 0px;
+      display: flex;
+      align-items: center;
+      background-color: #1976d2;
+      color: white;
+      font-weight: 600;
   }
-
-
-
-
+  
   .column {
-    float: left;
-    padding: 10px;
-    height: 600px; /* Should be removed. Only for demonstration */
+      float: left;
+      padding: 10px;
+      /* height: 600px; */
   }
-
+  
   .left {
-    width: 14%;
-    background-color:#aaa
+      width: 14%;
+      background-color: #aaa
   }
-
+  
   .middle {
-    width: 71%;
-    background-color: #bbb;
+      width: 71%;
+      background-color: #bbb;
   }
-
+  
   .right {
-    width: 11%;
-    background-color:#ccc;
+      width: 11%;
+      background-color: #ccc;
   }
-
+  
   .row:after {
-    content: "";
-    display: table;
-    clear: both;
+      content: "";
+      display: table;
+      clear: both;
   }

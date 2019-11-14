@@ -18,6 +18,22 @@ import { AccountComponent } from './account/account.component';
 import { TransactionListComponent } from './transaction-list/transaction-list.component';
 import { CreateTransactionComponent } from './create-transaction/create-transaction.component';
 
+import {MatTableModule} from '@angular/material/table';
+
+import {HttpClientModule} from '@angular/common/http';
+//import {Component, ViewChild, AfterViewInit, OnInit} from '@angular/core';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatSortModule} from '@angular/material/sort';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+
+
+
+//import {merge, Observable, of as observableOf} from 'rxjs';
+//import {catchError, map, startWith, switchMap} from 'rxjs/operators';
+
+//import {TableExpandableRowsExample} from './transaction-list/transaction-list.component';
+//test
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -26,7 +42,8 @@ import { CreateTransactionComponent } from './create-transaction/create-transact
     UserListComponent,
     AccountComponent,
     TransactionListComponent,
-    CreateTransactionComponent
+    CreateTransactionComponent, 
+      
   ],
   imports: [
     BrowserModule,
@@ -36,7 +53,11 @@ import { CreateTransactionComponent } from './create-transaction/create-transact
     MatCardModule,
     MatFormFieldModule,
     MatButtonModule,
-    MatInputModule
+    MatInputModule, 
+    HttpClientModule,
+    MatTableModule, 
+    MatPaginatorModule,
+    MatProgressSpinnerModule
   ],
   providers: [],
   bootstrap: [AppComponent]
