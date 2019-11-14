@@ -12,10 +12,11 @@ var fs = require('fs'),
     https = require('https'),
     http = require('http')
 
-var forceSSL = require('express-force-ssl')
+var forceSSL  = require('express-force-ssl')
+//console.log('dir', fs.readdirSync('./'))
 
-var privateKey = fs.readFileSync('../ssl/unsignedserver.key', 'utf8')
-var certificate = fs.readFileSync('../ssl/unsignedserver.pem', 'utf8')
+var privateKey = fs.readFileSync('./ssl/unsignedserver.key', 'utf8')
+var certificate = fs.readFileSync('./ssl/unsignedserver.pem', 'utf8')
 var credentials = {
     key: privateKey,
     cert: certificate,
@@ -34,19 +35,17 @@ let client = redis.createClient(
 let HighLevelProducer = kafka.HighLevelProducer,
     kafkaClient = new kafka.KafkaClient({
         kafkaHost: '34.74.80.207:39092,131.247.3.206:9092',
-        // sslOptions: {
-        //     // rejectUnauthorized: false,
-        //     // ca: [fs.readFileSync('./bin/chain.pem', 'utf-8')],
-        //     // cert: [fs.readFileSync('./bin/kafkaadmin.pem', 'utf-8')],
-        //     // key: [fs.readFileSync('./bin/kafkaadmin.key', 'utf-8')],
-        //     // passphrase: "mypass",
-        // }
+        // rejectUnauthorized: false,
+        // ca: [fs.readFileSync('./bin/chain.pem', 'utf-8')],
+        // cert: [fs.readFileSync('./bin/kafkaadmin.pem', 'utf-8')],
+        // key: [fs.readFileSync('./bin/kafkaadmin.key', 'utf-8')],
+        // passphrase: "mypass",
     }),
     producer = new HighLevelProducer(kafkaClient, {
         requireAcks: 1
     })
 
-app.use(cors()) //problematic
+    app.use(cors()) //problematic
 app.use(forceSSL)
 app.use(function (req, res, next) {
     let today = new Date();
@@ -125,6 +124,7 @@ Response:
 */
 app.post('/users/transact', asyncMiddleware(async (req, res, next) => {
     console.log('POST /users/transact')
+    req.body['transactionID'] = (await client.incrAsync('transaction')).toString().padStart(7,'0')
     console.log(req.body)
 
     // req.body['initial_amt']=req.body['initialamt']
@@ -163,7 +163,7 @@ app.post('/login', asyncMiddleware(async (req, res, next) => {
         req.body.username)
     let getPass = await client.hgetAsync(`user:${accNum}`, 'password')
     let response = {
-        'isBank': (parseInt(accNum) % 1000) == 0 ? true : false,
+        'isBank': (parseInt(accNum) % 1000 ) == 0 ? true : false,
         'verified': (req.body.password == getPass) ? true : false
     }
     console.log(response)
@@ -180,13 +180,13 @@ app.post('/login', asyncMiddleware(async (req, res, next) => {
 var httpServer = http.createServer(app);
 var httpsServer = https.createServer(credentials, app);
 
-httpServer.listen(8080, '127.0.0.1', () => {
+httpServer.listen(8080, () => {
     const host = httpServer.address().address;
     const port = httpServer.address().port;
     console.log(`DLT HTTP server listening at http://${host}:${port}`)
 })
-
-httpsServer.listen(8443, '127.0.0.1', () => {
+const PORT = 8443;
+httpsServer.listen(PORT, () => {
     const host = httpsServer.address().address;
     const port = httpsServer.address().port;
     console.log(`DLT HTTPS server listening at http://${host}:${port}`)

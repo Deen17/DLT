@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { RedisService } from './redis.service';
 
 @Component({
   selector: 'app-root',
@@ -14,12 +13,10 @@ export class AppComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private redis: RedisService
   ) { }
 
   async ngOnInit() {
     console.log('start app component');
-    console.log(await this.redis.startup);
     if (!this.isLoggedIn) {
       this.router.navigate(['login']);
     }

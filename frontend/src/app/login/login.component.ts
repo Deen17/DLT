@@ -1,31 +1,23 @@
 import { Component, OnInit, OnChanges, ViewChild } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { RedisService } from '../redis.service';
 import { Observable } from "rxjs"
 import {retry, catchError} from 'rxjs/operators'
-
-export interface LoginResponse {
-  isBank: boolean;
-  verified: boolean;
-}
-
-const httpOptions = {
-  headers: new HttpHeaders({
-    'Content-Type':  'application/json',
-  })
-};
+import { ApiService } from '../api.service';
+import { ThemePalette } from '@angular/material/core';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
+  providers: [ApiService]
 })
 export class LoginComponent implements OnInit, OnChanges {
   @ViewChild('username') username;
   @ViewChild('password') password;
+  buttonColor: ThemePalette = "primary"
   constructor(
     private http: HttpClient,
-    private api: RedisService
+    private api: ApiService
   ) { }
 
   async onSubmit() {
@@ -34,19 +26,14 @@ export class LoginComponent implements OnInit, OnChanges {
       "username": this.username.nativeElement.value,
       "password": this.password.nativeElement.value
     }
-    console.log(req)
-    let response: Observable<LoginResponse> = this.http.post<LoginResponse>(
-      `${this.api.apiUrlHttps}/login`,
-      req,
-      httpOptions
-    )
-    .pipe(
-      retry(3),
-    )
+    if(!req.username || !req.password){
+      this.buttonColor = "warn"
+      alert('empty username or password')
+    }
+      
+    let response = await this.api.login(req.username, req.password)
     console.log(response)
-    response.subscribe(
-      response => console.log(response)
-    )
+    this.buttonColor='primary'
   }
 
   ngOnChanges() {
