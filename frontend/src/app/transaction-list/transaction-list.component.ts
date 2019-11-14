@@ -8,11 +8,6 @@ import {Component} from '@angular/core';
   templateUrl: './transaction-list.component.html',
   styleUrls: ['./transaction-list.component.css']
 })
-@Component({
-  selector: 'paginator-overview-example',
-  templateUrl: 'paginator-overview-example.html',
-  styleUrls: ['paginator-overview-example.css'],
-})
 export class TransactionListComponent {
   displayedColumns = ['position', 'lastName', 'firstName', 'amount'];
   dataSource = ELEMENT_DATA;
