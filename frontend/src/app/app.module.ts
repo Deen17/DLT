@@ -11,6 +11,10 @@ import {MatCardModule} from '@angular/material/card';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatButtonModule} from '@angular/material/button';
 import {MatInputModule} from '@angular/material/input';
+import {MatTableModule} from '@angular/material/table';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatSortModule, MatSort} from '@angular/material/sort';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 import { LoginComponent } from './login/login.component';
 import { BankComponent } from './bank/bank.component';
@@ -38,7 +42,11 @@ import { CreateTransactionComponent } from './create-transaction/create-transact
     MatFormFieldModule,
     MatButtonModule,
     MatInputModule,
-    HttpClientModule
+    HttpClientModule,
+    MatTableModule, 
+    MatPaginatorModule,
+    MatProgressSpinnerModule,
+    MatSortModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
