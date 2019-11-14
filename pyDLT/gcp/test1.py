@@ -10,9 +10,11 @@ conf = {
 }
 
 producer = Producer(conf)
-client = redis.StrictRedis(host='127.0.0.1',
-                           port=6379,
-                           db=0)
+client = redis.StrictRedis(
+    # host='127.0.0.1',
+    host='104.196.105.254',
+    port=6379,
+    db=0)
 # value = {
 #     "transactionID": "000000000000",
 #     "senderAcctNum": "161",
