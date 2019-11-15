@@ -7,7 +7,7 @@ from typing import List
 from aredis import StrictRedis
 
 
-bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092'
+bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092;kafka://34.74.86.119:19092'
 app = faust.App('myapp1',
                 broker=bootstrap)
 client = StrictRedis(

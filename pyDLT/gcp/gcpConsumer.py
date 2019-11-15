@@ -3,7 +3,7 @@ import sys
 import time
 
 conf = {
-    'bootstrap.servers': "34.74.80.207:39092,131.247.3.206:9092",
+    'bootstrap.servers': "34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092",
     'group.id': "settledGroup1",
     'default.topic.config': {'auto.offset.reset': 'smallest'}}
 

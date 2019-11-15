@@ -13,7 +13,7 @@ var fs = require('fs'),
     http = require('http')
 
 var forceSSL = require('express-force-ssl')
-//console.log('dir', fs.readdirSync('./')).
+//console.log('dir', fs.readdirSync('./'))
 
 var privateKey = fs.readFileSync('./ssl/unsignedserver.key', 'utf8')
 var certificate = fs.readFileSync('./ssl/unsignedserver.pem', 'utf8')
@@ -34,7 +34,7 @@ let client = redis.createClient(
 //kafka client
 let HighLevelProducer = kafka.HighLevelProducer,
     kafkaClient = new kafka.KafkaClient({
-        kafkaHost: '34.74.80.207:39092,131.247.3.206:9092',
+        kafkaHost: '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092',
         // rejectUnauthorized: false,
         // ca: [fs.readFileSync('./bin/chain.pem', 'utf-8')],
         // cert: [fs.readFileSync('./bin/kafkaadmin.pem', 'utf-8')],
@@ -90,13 +90,24 @@ Params:
 
  */
 app.get('/banks/:bankid/users', asyncMiddleware(async (req, res, next) => {
-    console.log(`GET /users/` + req.params.bankid)
+    console.log(`GET /banks/${req.params.bankid}/users`)
     let users = await client.zrangeAsync(
         `bank:${req.params.bankid}`,
         0,
         -1)
     res.send({
         'users': users
+    })
+}))
+
+app.get('/users/:id/transactions', asyncMiddleware(async (req, res, next) => {
+    console.log(`GET /users/${req.params.id}/transactions` + req.params.id)
+    let transactions = await client.zrangeAsync(
+        `transactions:${req.params.id}`,
+        0,
+        -1)
+    res.send({
+        'transactions': transactions
     })
 }))
 
@@ -112,7 +123,7 @@ Params:
     senderAcctNum: string,
     receiverAcctNum: string,
     senderRoutingNum: string,
-    recevierRoutingNum: string,
+    receiverRoutingNum: string,
     currency: string,
     initial_amt: float,
     amt: float,
