@@ -5,7 +5,7 @@ import time
 import redis
 
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092'
+    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092',
     'client.id': 'test1',
 }
 
