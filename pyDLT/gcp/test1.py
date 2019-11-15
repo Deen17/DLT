@@ -59,6 +59,7 @@ async def main():
         }
 
         b = json.dumps(value).encode('utf-8')
+        print(b)
         producer.produce('initiated_transactions',
                          # key='1'.encode('utf-8'),
                          key=None,
