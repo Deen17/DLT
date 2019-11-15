@@ -218,7 +218,7 @@ async def process_settled(transactions):
             # execute the entire transaction/pipeline
             # await app.commit('settled_transactions')
             res = await pipe.execute()
-            print(res)
+           # print(res)
 
 
 if __name__ == '__main__':

@@ -43,7 +43,7 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 100):
+    for i in range(0, 3333):
         # x = random.randint(0, 20000)
 
         value = {

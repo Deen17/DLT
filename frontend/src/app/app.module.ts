@@ -22,6 +22,10 @@ import { UserListComponent } from './user-list/user-list.component';
 import { AccountComponent } from './account/account.component';
 import { TransactionListComponent } from './transaction-list/transaction-list.component';
 import { CreateTransactionComponent } from './create-transaction/create-transaction.component';
+import {MatDialogModule} from '@angular/material/dialog';
+import { TransactionComponent } from './transaction/transaction.component';
+import { DelayedTransactionsListComponent } from './delayed-transactions-list/delayed-transactions-list.component';
+
 
 @NgModule({
   declarations: [
@@ -31,7 +35,9 @@ import { CreateTransactionComponent } from './create-transaction/create-transact
     UserListComponent,
     AccountComponent,
     TransactionListComponent,
-    CreateTransactionComponent
+    CreateTransactionComponent,
+    TransactionComponent,
+    DelayedTransactionsListComponent,
   ],
   imports: [
     BrowserModule,
@@ -46,6 +52,7 @@ import { CreateTransactionComponent } from './create-transaction/create-transact
     MatTableModule, 
     MatPaginatorModule,
     MatProgressSpinnerModule,
+    MatDialogModule,
     MatSortModule,
   ],
   providers: [],
