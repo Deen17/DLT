@@ -43,7 +43,7 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 100):
+    for i in range(0, 3334):
         # x = random.randint(0, 20000)
 
         value = {
@@ -66,6 +66,8 @@ async def main():
                          key=None,
                          value=b,
                          on_delivery=on_callback)
+        if (i % 100000 == 0):
+            producer.flush()
     producer.flush()
     print("%f seconds" % ((time.process_time_ns() - start) / 1000000000))
     print(time.time())

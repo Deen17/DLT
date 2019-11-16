@@ -86,6 +86,8 @@ debtor_agent = app.channel()  # in-memory buffer
 
 @app.agent(initiated_topic)
 async def process(transactions):
+    """Initial processing of all processes. Routes transactions to the
+    appropriate place"""
     async for transaction in transactions:
         datopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA"
         # send this transaction to its appropriate sender's bank
@@ -218,7 +220,7 @@ async def process_settled(transactions):
             # execute the entire transaction/pipeline
             # await app.commit('settled_transactions')
             res = await pipe.execute()
-            print(res)
+            # print(res)
 
 
 if __name__ == '__main__':

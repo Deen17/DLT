@@ -4,7 +4,7 @@ import time
 
 conf = {
     'bootstrap.servers': "34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092",
-    'group.id': "settledGroup1",
+    'group.id': "settledGroup11",
     'default.topic.config': {'auto.offset.reset': 'smallest'}}
 
 consumer = Consumer(conf)
@@ -24,9 +24,9 @@ try:
             continue
 
         counter += 1
-        print("counter %d" % counter)
-        print('Received message: {}'.format(msg.value().decode('utf-8')))
-
+        if(counter % 1000 == 0):
+            print("counter %d" % counter)
+            print('Received message: {}'.format(msg.value().decode('utf-8')))
 
 except KeyboardInterrupt:
     print(time.process_time() - start)
