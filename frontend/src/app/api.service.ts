@@ -7,6 +7,8 @@ import { promisify } from 'util';
 export interface LoginResponse {
   isBank: boolean;
   verified: boolean;
+  accNum: string;
+  routingNum: string;
 }
 
 export interface AccountResponse {
@@ -39,12 +41,12 @@ export class TransactionForm {
     currency: string,
     amt: number,
     instrument: string
-  ){
+  ) {
     this.receiverAcctNum = receiverAcctNum,
-    this.amt = amt,
-    this.receiverRoutingNum = receiverRoutingNum,
-    this.currency = currency,
-    this.instrument = instrument
+      this.amt = amt,
+      this.receiverRoutingNum = receiverRoutingNum,
+      this.currency = currency,
+      this.instrument = instrument
   }
 
   toTransactionRequest(senderAcctNum: string, senderRoutingNum: string): TransactionRequest {
@@ -83,14 +85,21 @@ export class ApiService {
   public username: string;
   public isBank: boolean;
 
-  loginSuccess: Subject<boolean> = new Subject<true>()
-  login$: Observable<boolean> = this.loginSuccess.asObservable()
+  public loginSuccess: Subject<boolean>;
+  public login$: Observable<boolean>;
 
   constructor(
     private http: HttpClient
   ) {
     this.httpsUrl = `https://${this.url}`
     this.httpUrl = `http://${this.url}:81`
+    this.loginSuccess = new Subject<boolean>()
+    this.login$ = this.loginSuccess.asObservable()
+    console.log('service initiated')
+  }
+
+  public loginObservable(): Observable<boolean> {
+    return this.loginSuccess.asObservable();
   }
 
   //straight from angular.io
@@ -153,23 +162,64 @@ export class ApiService {
     return response.toPromise();
   }
 
+  getTransactionsByUserID(
+    id: string) {
+    let response = this.http.get<string[]>(
+      `${this.httpsUrl}/users/${id}/transactions`,
+      httpOptions
+    )
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      )
+    return response.toPromise();
+  }
+
+  getTransactionsByStart(
+    id: string,
+    start: number) {
+    let response = this.http.get<string[]>(
+      `${this.httpsUrl}/users/${id}/transactions/${start}`,
+      httpOptions
+    )
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      )
+    return response.toPromise();
+  }
+
+  getTransactionsByStartEnd(
+    id: string,
+    start: number,
+    end: number
+  ) {
+    let response = this.http.get<string[]>(
+      `${this.httpsUrl}/users/${id}/transactions/${start}/${end}`,
+      httpOptions
+    )
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      )
+    return response.toPromise();
+  }
+
   /**
    * Post a Transaction.
    * @param {}
    */
-  postTransaction(transaction: TransactionRequest): Promise<number>
-  {
+  postTransaction(transaction: TransactionRequest): Promise<number> {
     let response = this.http.post<number>(
       `${this.httpsUrl}/users/transact`,
       transaction,
       httpOptions
     )
-    .pipe(
-      retry(3),
-      catchError(this.handleError)
-    )
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      )
     return response.toPromise();
   }
-
 
 }

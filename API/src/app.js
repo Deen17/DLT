@@ -119,7 +119,7 @@ app.get('/users/:id/transactions', asyncMiddleware(async (req, res, next) => {
 
 app.get('/users/:id/transactions/:start', asyncMiddleware(async (req, res, next) => {
     let response = await getTransactions(req.params.id, req.parms.start)
-
+    res.send(response)
 }))
 
 app.get('/users/:id/transactions/:start/:end', asyncMiddleware(async (req, res, next) => {
@@ -194,7 +194,9 @@ app.post('/login', asyncMiddleware(async (req, res, next) => {
     let getPass = await client.hgetAsync(`user:${accNum}`, 'password')
     let response = {
         'isBank': (parseInt(accNum) % 1000) == 0 ? true : false,
-        'verified': (req.body.password == getPass) ? true : false
+        'verified': (req.body.password == getPass) ? true : false,
+        'accNum': accNum.substr(4,4),
+        'routingNum': accNum.substr(0,4)
     }
     console.log(response)
     res.send(response)
