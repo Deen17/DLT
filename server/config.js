@@ -9,7 +9,7 @@ module.exports={
     },
     redisOptions: {
         port: 6379,
-        ip: '104.196.105.254',
+        ip: '35.196.186.57',
     },
     
 }

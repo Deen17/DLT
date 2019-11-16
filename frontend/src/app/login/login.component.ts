@@ -39,8 +39,9 @@ export class LoginComponent implements OnInit {
     this.api.username = req.username;
     this.api.accNum = response.accNum;
     this.api.routingNum = response.routingNum;
+    this.api.fullID = `${response.routingNum}${response.accNum}`
     this.api.loginSuccess.next(true)
-    //this.router.navigate(['account'])
+    this.router.navigate(['account'])
   }
 
   ngOnInit() {

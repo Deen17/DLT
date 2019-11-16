@@ -12,7 +12,7 @@ app = faust.App('myapp1',
                 broker=bootstrap)
 client = StrictRedis(
     # host='127.0.0.1',
-    host='104.196.105.254',
+    host='35.196.186.57',
     port=6379,
     db=0)
 

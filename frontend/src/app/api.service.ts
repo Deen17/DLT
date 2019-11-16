@@ -84,6 +84,7 @@ export class ApiService {
   public routingNum: string;
   public username: string;
   public isBank: boolean;
+  public fullID: string;
 
   public loginSuccess: Subject<boolean>;
   public login$: Observable<boolean>;

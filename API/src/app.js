@@ -92,7 +92,10 @@ app.get('/test', asyncMiddleware(async (req, res, next) => {
 app.get('/users/:id', asyncMiddleware(async (req, res, next) => {
     console.log(`GET /users/` + req.params.id)
     let userDetails = await client.hgetallAsync(`user:${req.params.id}`)
-    res.send(userDetails)
+    res.send({
+        name: userDetails.name,
+        balance: userDetails.balance
+    })
 }))
 
 
