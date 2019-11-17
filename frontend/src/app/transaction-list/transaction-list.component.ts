@@ -31,7 +31,7 @@ export class TransactionListComponent implements OnInit {
 
   async ngOnInit() {
     this.transactionCount =
-      await this.api.getTransactionCountByID(this.api.fullID)
+      (await this.api.getTransactionCountByID(this.api.fullID)).count
     console.log('transactioncount: ', this.transactionCount)
 
     let response = await

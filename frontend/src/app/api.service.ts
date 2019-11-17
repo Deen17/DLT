@@ -24,6 +24,9 @@ export interface AccountResponse {
   balance: number;
 }
 
+export interface TransactionCountResponse {
+  count: number;
+}
 
 export interface TransactionRequest {
   senderAcctNum: string,
@@ -182,8 +185,8 @@ export class ApiService {
     return response.toPromise();
   }
 
-  getTransactionCountByID(id: string): Promise<number> {
-    let response = this.http.get<number>(
+  getTransactionCountByID(id: string): Promise<TransactionCountResponse> {
+    let response = this.http.get<TransactionCountResponse>(
       `${this.httpsUrl}/users/${id}/transactioncount`,
       httpOptions
     )
