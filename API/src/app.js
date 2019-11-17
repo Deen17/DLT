@@ -90,6 +90,19 @@ app.get('/test', asyncMiddleware(async (req, res, next) => {
     })
 }))
 
+
+/**
+ * @title getTransactionDetailsByID
+ * @param {string} id
+ * @returns {Object}
+ */
+app.get('/transaction/:id', asyncMiddleware(async (req, res, next) => {
+    let transaction = await client.hgetallAsync(
+        `transactionID:${req.params.id}`
+    )
+    res.send(transaction)
+}))
+
 app.get('/users/:id', asyncMiddleware(async (req, res, next) => {
     console.log(`GET /users/` + req.params.id)
     let userDetails = await client.hgetallAsync(`user:${req.params.id}`)
@@ -144,14 +157,14 @@ app.get('/users/:id/transactions', asyncMiddleware(async (req, res, next) => {
 }))
 
 app.get('/users/:id/transactions/:start', asyncMiddleware(async (req, res, next) => {
-    let response = await getTransactions(req.params.id, req.parms.start)
+    let response = await getTransactions(req.params.id, req.params.start)
     res.send(response)
 }))
 
 app.get('/users/:id/transactions/:start/:end', asyncMiddleware(async (req, res, next) => {
     let response = await getTransactions(
         req.params.id,
-        req.parms.start,
+        req.params.start,
         req.params.end)
     res.send(response)
 }))

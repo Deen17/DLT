@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError, Subject } from "rxjs"
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http'
 import { retry, catchError } from 'rxjs/operators';
-import { promisify } from 'util';
+import { TransactionResponse, Transaction, convertResponseToTransaction} from './transaction'
 
 export interface LoginResponse {
   isBank: boolean;
@@ -11,7 +11,11 @@ export interface LoginResponse {
   routingNum: string;
 }
 
-export interface TransactionResponse {
+export interface TransactionListResponse{
+  transactions: string[];
+}
+
+export interface TransactionProcessingResponse {
   response: string;
 }
 
@@ -19,6 +23,7 @@ export interface AccountResponse {
   name: string;
   balance: number;
 }
+
 
 export interface TransactionRequest {
   senderAcctNum: string,
@@ -138,6 +143,19 @@ export class ApiService {
     return response.toPromise()
   }
 
+  getTransactionDetailsByID(id: string): Promise<TransactionResponse>{
+    let response = this.http.get<TransactionResponse>(
+      `${this.httpsUrl}/transaction/${id}`,
+      httpOptions
+    )
+    .pipe(
+      retry(3),
+      catchError(this.handleError)
+    )
+
+    return response.toPromise()
+  }
+
   getUserDetailsByID(id: string): Promise<AccountResponse> {
     let response = this.http.get<AccountResponse>(
       `${this.httpsUrl}/users/${id}`,
@@ -164,9 +182,22 @@ export class ApiService {
     return response.toPromise();
   }
 
+  getTransactionCountByID(id: string): Promise<number> {
+    let response = this.http.get<number>(
+      `${this.httpsUrl}/users/${id}/transactioncount`,
+      httpOptions
+    )
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      )
+
+    return response.toPromise();
+  }
+
   getTransactionsByUserID(
-    id: string) {
-    let response = this.http.get<string[]>(
+    id: string) : Promise<TransactionListResponse> {
+    let response = this.http.get<TransactionListResponse>(
       `${this.httpsUrl}/users/${id}/transactions`,
       httpOptions
     )
@@ -175,12 +206,13 @@ export class ApiService {
         catchError(this.handleError)
       )
     return response.toPromise();
+    
   }
 
   getTransactionsByStart(
     id: string,
-    start: number) {
-    let response = this.http.get<string[]>(
+    start: number): Promise<TransactionListResponse> {
+    let response = this.http.get<TransactionListResponse>(
       `${this.httpsUrl}/users/${id}/transactions/${start}`,
       httpOptions
     )
@@ -195,8 +227,8 @@ export class ApiService {
     id: string,
     start: number,
     end: number
-  ) {
-    let response = this.http.get<string[]>(
+  ): Promise<TransactionListResponse> {
+    let response = this.http.get<TransactionListResponse>(
       `${this.httpsUrl}/users/${id}/transactions/${start}/${end}`,
       httpOptions
     )
@@ -211,8 +243,8 @@ export class ApiService {
    * Post a Transaction.
    * @param {}
    */
-  postTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
-    let response = this.http.post<TransactionResponse>(
+  postTransaction(transaction: TransactionRequest): Promise<TransactionProcessingResponse> {
+    let response = this.http.post<TransactionProcessingResponse>(
       `${this.httpsUrl}/users/transact`,
       transaction,
       httpOptions
