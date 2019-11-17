@@ -11,6 +11,10 @@ export interface LoginResponse {
   routingNum: string;
 }
 
+export interface TransactionResponse {
+  response: string;
+}
+
 export interface AccountResponse {
   name: string;
   balance: number;
@@ -32,20 +36,17 @@ export interface TransactionRequest {
 export class TransactionForm {
   receiverAcctNum: string;
   receiverRoutingNum: string;
-  currency: string;
   amt: number;
   instrument: string;
   constructor(
     receiverAcctNum: string,
     receiverRoutingNum: string,
-    currency: string,
     amt: number,
     instrument: string
   ) {
     this.receiverAcctNum = receiverAcctNum,
       this.amt = amt,
       this.receiverRoutingNum = receiverRoutingNum,
-      this.currency = currency,
       this.instrument = instrument
   }
 
@@ -55,7 +56,7 @@ export class TransactionForm {
       initial_amt: this.amt,
       receiverAcctNum: this.receiverAcctNum,
       receiverRoutingNum: this.receiverAcctNum,
-      currency: this.currency,
+      currency: 'USD',
       instrument: this.instrument,
       mutations: [],
       senderAcctNum: senderAcctNum,
@@ -210,14 +211,14 @@ export class ApiService {
    * Post a Transaction.
    * @param {}
    */
-  postTransaction(transaction: TransactionRequest): Promise<number> {
-    let response = this.http.post<number>(
+  postTransaction(transaction: TransactionRequest): Promise<TransactionResponse> {
+    let response = this.http.post<TransactionResponse>(
       `${this.httpsUrl}/users/transact`,
       transaction,
       httpOptions
     )
       .pipe(
-        retry(3),
+        //retry(3),
         catchError(this.handleError)
       )
     return response.toPromise();

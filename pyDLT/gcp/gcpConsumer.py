@@ -4,7 +4,7 @@ import time
 
 conf = {
     'bootstrap.servers': "34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092",
-    'group.id': "settledGroup11",
+    'group.id': "settledGroup1",
     'default.topic.config': {'auto.offset.reset': 'smallest'}}
 
 consumer = Consumer(conf)

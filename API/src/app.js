@@ -30,6 +30,7 @@ let client = redis.createClient(
     config.redisOptions.port,
     config.redisOptions.ip, //'127.0.0.1'
 )
+let blockingClient = client.duplicate()
 
 //kafka client
 let HighLevelProducer = kafka.HighLevelProducer,
@@ -48,7 +49,7 @@ let HighLevelProducer = kafka.HighLevelProducer,
 var getTransactions = async function (id, start = 0, end = -1) {
     console.log(`GET /users/${id}/transactions/${start}/${end}`)
     let transactions = await client.zrangeAsync(
-        `transactions:${req.params.id}`,
+        `transactions:${id}`,
         start,
         end)
     return ({
@@ -99,8 +100,8 @@ app.get('/users/:id', asyncMiddleware(async (req, res, next) => {
 }))
 
 
-/*
-Get Users by Bank ID
+/**
+ @name GetUsersbyBank ID
 Params:
 
  */
@@ -115,6 +116,28 @@ app.get('/banks/:bankid/users', asyncMiddleware(async (req, res, next) => {
     })
 }))
 
+/**
+ * @name getTransactionCountByID
+ * @param {number} id
+ * @returns {number}
+ */
+app.get('/users/:id/transactioncount', asyncMiddleware(async (req, res, next) => {
+    let response = await client.zcountAsync(
+        `transactions:${req.params.id}`,
+        -1,
+        99999999
+    )
+    res.send({
+        count: response
+    })
+    //res.send(response)
+}))
+
+/**
+ * @name getTransactionsByID
+ * @param {number} id
+ * @returns {Object} transactions
+ */
 app.get('/users/:id/transactions', asyncMiddleware(async (req, res, next) => {
     let response = await getTransactions(req.params.id)
     res.send(response)
@@ -173,10 +196,10 @@ app.post('/users/transact', asyncMiddleware(async (req, res, next) => {
         if (err) console.log(err)
         console.log('res', res)
     })
-    let blockingClient = await client.duplicate()
+    //
     let val = await blockingClient.blpopAsync(`ready:${req.body.transactionID}`, 0)
     res.send({
-        "response": val
+        "response": val[1]
     })
 }))
 
@@ -191,15 +214,21 @@ response:
 */
 app.post('/login', asyncMiddleware(async (req, res, next) => {
     console.log('POST /login')
+    console.log(req.body.username, req.body.password)
     let accNum = await client.hgetAsync(
         "usernames",
         req.body.username)
+    if (accNum == null)
+        res.send({
+            isBank: false,
+            verified: false
+        })
     let getPass = await client.hgetAsync(`user:${accNum}`, 'password')
     let response = {
         'isBank': (parseInt(accNum) % 1000) == 0 ? true : false,
         'verified': (req.body.password == getPass) ? true : false,
-        'accNum': accNum.substr(4,4),
-        'routingNum': accNum.substr(0,4)
+        'accNum': accNum.substr(4, 4),
+        'routingNum': accNum.substr(0, 4)
     }
     console.log(response)
     res.send(response)
