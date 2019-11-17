@@ -5,14 +5,14 @@ import time
 import redis
 
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092,131.247.3.206:9092',
+    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092',
     'client.id': 'test1',
 }
 
 producer = Producer(conf)
 client = redis.StrictRedis(
     # host='127.0.0.1',
-    host='104.196.105.254',
+    host='35.196.186.57',
     port=6379,
     db=0)
 # value = {
@@ -59,6 +59,7 @@ async def main():
         }
 
         b = json.dumps(value).encode('utf-8')
+        print(b)
         producer.produce('initiated_transactions',
                          # key='1'.encode('utf-8'),
                          key=None,

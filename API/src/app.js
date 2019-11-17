@@ -13,7 +13,7 @@ var fs = require('fs'),
     http = require('http')
 
 var forceSSL = require('express-force-ssl')
-//console.log('dir', fs.readdirSync('./')).
+//console.log('dir', fs.readdirSync('./'))
 
 var privateKey = fs.readFileSync('./ssl/unsignedserver.key', 'utf8')
 var certificate = fs.readFileSync('./ssl/unsignedserver.pem', 'utf8')
@@ -30,11 +30,12 @@ let client = redis.createClient(
     config.redisOptions.port,
     config.redisOptions.ip, //'127.0.0.1'
 )
+let blockingClient = client.duplicate()
 
 //kafka client
 let HighLevelProducer = kafka.HighLevelProducer,
     kafkaClient = new kafka.KafkaClient({
-        kafkaHost: '34.74.80.207:39092,131.247.3.206:9092',
+        kafkaHost: '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092',
         // rejectUnauthorized: false,
         // ca: [fs.readFileSync('./bin/chain.pem', 'utf-8')],
         // cert: [fs.readFileSync('./bin/kafkaadmin.pem', 'utf-8')],
@@ -45,7 +46,19 @@ let HighLevelProducer = kafka.HighLevelProducer,
         requireAcks: 1
     })
 
-app.use(cors()) //problematic
+var getTransactions = async function (id, start = 0, end = -1) {
+    console.log(`GET /users/${id}/transactions/${start}/${end}`)
+    let transactions = await client.zrangeAsync(
+        `transactions:${id}`,
+        start,
+        end)
+    return ({
+        'transactions': transactions
+    })
+}
+
+
+app.use(cors())
 app.use(forceSSL)
 app.use(function (req, res, next) {
     let today = new Date();
@@ -80,17 +93,20 @@ app.get('/test', asyncMiddleware(async (req, res, next) => {
 app.get('/users/:id', asyncMiddleware(async (req, res, next) => {
     console.log(`GET /users/` + req.params.id)
     let userDetails = await client.hgetallAsync(`user:${req.params.id}`)
-    res.send(userDetails)
+    res.send({
+        name: userDetails.name,
+        balance: userDetails.balance
+    })
 }))
 
 
-/*
-Get Users by Bank ID
+/**
+ @name GetUsersbyBank ID
 Params:
 
  */
 app.get('/banks/:bankid/users', asyncMiddleware(async (req, res, next) => {
-    console.log(`GET /users/` + req.params.bankid)
+    console.log(`GET /banks/${req.params.bankid}/users`)
     let users = await client.zrangeAsync(
         `bank:${req.params.bankid}`,
         0,
@@ -100,19 +116,59 @@ app.get('/banks/:bankid/users', asyncMiddleware(async (req, res, next) => {
     })
 }))
 
+/**
+ * @name getTransactionCountByID
+ * @param {number} id
+ * @returns {number}
+ */
+app.get('/users/:id/transactioncount', asyncMiddleware(async (req, res, next) => {
+    let response = await client.zcountAsync(
+        `transactions:${req.params.id}`,
+        -1,
+        99999999
+    )
+    res.send({
+        count: response
+    })
+    //res.send(response)
+}))
+
+/**
+ * @name getTransactionsByID
+ * @param {number} id
+ * @returns {Object} transactions
+ */
+app.get('/users/:id/transactions', asyncMiddleware(async (req, res, next) => {
+    let response = await getTransactions(req.params.id)
+    res.send(response)
+}))
+
+app.get('/users/:id/transactions/:start', asyncMiddleware(async (req, res, next) => {
+    let response = await getTransactions(req.params.id, req.parms.start)
+    res.send(response)
+}))
+
+app.get('/users/:id/transactions/:start/:end', asyncMiddleware(async (req, res, next) => {
+    let response = await getTransactions(
+        req.params.id,
+        req.parms.start,
+        req.params.end)
+    res.send(response)
+}))
+
 //posts
 
 /*
 http post :3000/users/transact transactionID="0000001" senderAcctNum="0001" receiverAcctNum="0001" senderRoutingNum="0001" receiverRoutingNum="0002" currency="USD" initial_amt:=100 amt:=100 instrument="credit" settled:=false mutations:='[]'
 */
-/*
+/**
 Create Transaction
 Params:
     transactionID: string,
     senderAcctNum: string,
     receiverAcctNum: string,
     senderRoutingNum: string,
-    recevierRoutingNum: string,
+    receiverRoutingNum: string,
     currency: string,
     initial_amt: float,
     amt: float,
@@ -125,7 +181,7 @@ Response:
 app.post('/users/transact', asyncMiddleware(async (req, res, next) => {
     console.log('POST /users/transact')
     req.body['transactionID'] = (await client.incrAsync('transaction')).toString().padStart(7, '0')
-    console.log(req.body)
+    console.log('transaction', req.body)
 
     // req.body['initial_amt']=req.body['initialamt']
     // delete req.body['initialamt']
@@ -140,10 +196,10 @@ app.post('/users/transact', asyncMiddleware(async (req, res, next) => {
         if (err) console.log(err)
         console.log('res', res)
     })
-    let blockingClient = await client.duplicate()
+    //
     let val = await blockingClient.blpopAsync(`ready:${req.body.transactionID}`, 0)
     res.send({
-        "response": val
+        "response": val[1]
     })
 }))
 
@@ -158,24 +214,25 @@ response:
 */
 app.post('/login', asyncMiddleware(async (req, res, next) => {
     console.log('POST /login')
+    console.log(req.body.username, req.body.password)
     let accNum = await client.hgetAsync(
         "usernames",
         req.body.username)
+    if (accNum == null)
+        res.send({
+            isBank: false,
+            verified: false
+        })
     let getPass = await client.hgetAsync(`user:${accNum}`, 'password')
     let response = {
         'isBank': (parseInt(accNum) % 1000) == 0 ? true : false,
-        'verified': (req.body.password == getPass) ? true : false
+        'verified': (req.body.password == getPass) ? true : false,
+        'accNum': accNum.substr(4, 4),
+        'routingNum': accNum.substr(0, 4)
     }
     console.log(response)
     res.send(response)
 }))
-
-
-// const server = app.listen(config.appServer.port, config.appServer.hostname, () => {
-//     const host = server.address().address;
-//     const port = server.address().port;
-//     console.log(`DLT server listening at http://${host}:${port}`)
-// });
 
 var httpServer = http.createServer(app);
 var httpsServer = https.createServer(credentials, app);

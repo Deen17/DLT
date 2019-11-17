@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from './api.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -11,11 +12,16 @@ export class AppComponent implements OnInit {
   title = 'frontend';
   isLoggedIn = false;
   isBank = false;
-
   constructor(
     private router: Router,
     private api: ApiService
-  ) {}
+  ) {
+    this.api.login$.subscribe(
+      result => {
+        this.setLoginStatus(result)
+      }
+    )
+  }
 
   setLoginStatus(loggedIn: boolean) {
     this.isLoggedIn = loggedIn;
@@ -32,13 +38,6 @@ export class AppComponent implements OnInit {
       this.router.navigate(['bank']);
     }
 
-    this.api.loginSuccess.subscribe(
-      result => {
-        console.log('result', result)
-        this.setLoginStatus(result)
-      }
-    )
 
-    this.api.loginSuccess.next(false)
   }
 }

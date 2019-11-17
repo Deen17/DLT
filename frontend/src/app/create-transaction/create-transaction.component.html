@@ -1,25 +1,30 @@
+<mat-card class="card">
+  <mat-card-header>
+    <mat-card-title>Create Transaction Details</mat-card-title>
+  </mat-card-header>
+  <mat-card-content class="container">
+    <div class="example-container">
+      <mat-form-field>
+        <input matInput (keydown.enter)="this.onSubmit()" #amt placeholder="Amount">
+      </mat-form-field>
 
-<p>Transfer Money</p>
-<div class="example-container">
-    <mat-form-field>
-      <input matInput placeholder="Amount">
-    </mat-form-field>
-  
-    <mat-form-field>
-            <input matInput placeholder="Instrument">
-    </mat-form-field>
-    <mat-form-field>
-            <input matInput placeholder="Routing Number">
-    </mat-form-field>
+      <mat-form-field>
+        <input matInput (keydown.enter)="this.onSubmit()" #instrument placeholder="Instrument">
+      </mat-form-field>
+      <mat-form-field>
+        <input matInput (keydown.enter)="this.onSubmit()" (keydown.enter)="this.onSubmit()" #routingNum placeholder="Receiver's Routing Number">
+      </mat-form-field>
 
-    <mat-form-field>
-            <input matInput placeholder="Account Number">
-    </mat-form-field>
-  
+      <mat-form-field>
+        <input matInput (keydown.enter)="this.onSubmit()" #accountNum placeholder="Receiver's Account Number">
+      </mat-form-field>
 
-  </div>
 
-<h3></h3>
-<div class="example-button-row">
-  <button mat-raised-button color="primary">Transfer</button>
-</div>
+    </div>
+
+    <h3></h3>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-raised-button (keydown.enter)="this.onSubmit()" color="primary">Transfer</button>
+  </mat-card-actions>
+</mat-card>

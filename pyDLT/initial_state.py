@@ -5,7 +5,7 @@ from aredis import StrictRedis
 async def setInitialState():
     client = StrictRedis(
         # host='127.0.0.1',
-        host='104.196.105.254',
+        host='35.196.186.57',
         port=6379,
         db=0)
     await client.flushdb()

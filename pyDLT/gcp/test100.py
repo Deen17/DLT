@@ -5,7 +5,7 @@ import time
 import redis
 
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092,131.247.3.206:9092',
+    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092',
     'client.id': 'test1',
 }
 
@@ -13,7 +13,7 @@ producer = Producer(conf)
 node1 = 'clustercfg.redis-cluster.drf52m.use1.cache.amazonaws.com'
 client = redis.StrictRedis(
     # host='127.0.0.1',
-    host='104.196.105.254',
+    host='35.196.186.57',
     port=6379,
     db=0)
 
@@ -43,7 +43,7 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 100):
+    for i in range(0, 3334):
         # x = random.randint(0, 20000)
 
         value = {
@@ -66,6 +66,8 @@ async def main():
                          key=None,
                          value=b,
                          on_delivery=on_callback)
+        if (i % 100000 == 0):
+            producer.flush()
     producer.flush()
     print("%f seconds" % ((time.process_time_ns() - start) / 1000000000))
     print(time.time())

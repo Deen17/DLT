@@ -7,12 +7,12 @@ from typing import List
 from aredis import StrictRedis
 
 
-bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092'
+bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092;kafka://34.74.86.119:19092'
 app = faust.App('myapp1',
                 broker=bootstrap)
 client = StrictRedis(
     # host='127.0.0.1',
-    host='104.196.105.254',
+    host='35.196.186.57',
     port=6379,
     db=0)
 
@@ -86,6 +86,8 @@ debtor_agent = app.channel()  # in-memory buffer
 
 @app.agent(initiated_topic)
 async def process(transactions):
+    """Initial processing of all processes. Routes transactions to the
+    appropriate place"""
     async for transaction in transactions:
         datopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA"
         # send this transaction to its appropriate sender's bank
@@ -218,7 +220,7 @@ async def process_settled(transactions):
             # execute the entire transaction/pipeline
             # await app.commit('settled_transactions')
             res = await pipe.execute()
-            print(res)
+            # print(res)
 
 
 if __name__ == '__main__':
