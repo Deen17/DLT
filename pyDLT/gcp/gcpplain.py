@@ -12,7 +12,7 @@ app = faust.App('myapp1',
                 broker=bootstrap)
 client = StrictRedis(
     # host='127.0.0.1',
-    host='35.196.186.57',
+    host='104.196.105.254',
     port=6379,
     db=0)
 
@@ -90,6 +90,7 @@ async def process(transactions):
     appropriate place"""
     async for transaction in transactions:
         datopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA"
+        print("initiated->DA")
         # send this transaction to its appropriate sender's bank
         # await app.commit("initiated_transactions")
         await app.topic(datopic,
@@ -110,6 +111,7 @@ async def bankA_DA_process(transactions):
         transaction.amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
         catopic += "_CA"
+        print("DA->CA")
         # await app.commit("bankA_DA")
         await app.topic(catopic,
                         key_type=bytes,
@@ -129,6 +131,7 @@ async def bankB_DA_process(transactions):
         transaction.amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
         catopic += "_CA"
+        print("DA->CA")
         # await app.commit("bankB_DA")
         await app.topic(catopic,
                         key_type=bytes,
@@ -145,6 +148,7 @@ async def bankA_CA_process(transactions):
         mutation = {bankacc: take}
         transaction.mutations.append(mutation)
         transaction.amt -= take
+        print("CA->settled")
         # await app.commit("bankA_CA")
         await settled.send(value=transaction)
 
@@ -159,6 +163,7 @@ async def bankB_CA_process(transactions):
         mutation = {bankacc: take}
         transaction.mutations.append(mutation)
         transaction.amt -= take
+        print("ca->settled")
         # await app.commit("bankB_CA")
         await settled.send(value=transaction)
 
@@ -219,6 +224,7 @@ async def process_settled(transactions):
             await pipe.rpush(ready_transaction, 0)
             # execute the entire transaction/pipeline
             # await app.commit('settled_transactions')
+            print("settled")
             res = await pipe.execute()
             # print(res)
 

@@ -193,7 +193,8 @@ Response:
 */
 app.post('/users/transact', asyncMiddleware(async (req, res, next) => {
     console.log('POST /users/transact')
-    req.body['transactionID'] = (await client.incrAsync('transaction')).toString().padStart(7, '0')
+    transactionID = (await client.incrAsync('transaction'))
+    req.body['transactionID'] = transactionID.toString().padStart(7, '0')
     console.log('transaction', req.body)
 
     // req.body['initial_amt']=req.body['initialamt']
@@ -210,7 +211,7 @@ app.post('/users/transact', asyncMiddleware(async (req, res, next) => {
         console.log('res', res)
     })
     //
-    let val = await blockingClient.blpopAsync(`ready:${req.body.transactionID}`, 0)
+    let val = await blockingClient.blpopAsync(`ready:${req.body['transactionID']}`, 0)
     res.send({
         "response": val[1]
     })

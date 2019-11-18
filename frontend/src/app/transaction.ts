@@ -10,8 +10,8 @@ export interface transactionRow {
     amt: number;
     initial_amt: number;
     settled: boolean;
-    mutations: (string | number)[][];
-  }
+    mutations: Object;
+}
 
 
 export interface TransactionResponse {
@@ -39,7 +39,7 @@ export class Transaction {
     public currency: string;
     public instrument: string;
     public settled: boolean;
-    public mutations: (string | number)[][]
+    public mutations: any;
 
     constructor(
         transactionID: string,
@@ -66,7 +66,7 @@ export class Transaction {
             this.settled = "True" ? true : false,
             this.mutations = convertMutationsToObject(mutations)
     }
-    public toJSON(): transactionRow{
+    public toJSON(): transactionRow {
         return {
             transactionID: this.transactionID,
             senderAccNum: this.senderAccNum,
@@ -89,10 +89,10 @@ function convertMutationsToObject(str: string) {
     let val = +str.substring(19, str.indexOf('}, {\''));
     let field2 = str.substr(str.indexOf('}, {\'') + 5, 13);
     let val2 = +str.substring(str.indexOf('}, {\'') + 21, str.lastIndexOf('}'));
-    return [
-        [field, val],
-        [field2, val]
-    ]
+    return {
+        fields: [field,field2],
+        vals: [val, val2]
+    }
 }
 
 

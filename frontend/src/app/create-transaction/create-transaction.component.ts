@@ -25,7 +25,6 @@ export class CreateTransactionComponent implements OnInit {
       ).toTransactionRequest(
         this.api.accNum,
         this.api.routingNum)
-    console.log(req)
     let response = await this.api.postTransaction(
       req)
     console.log(response)

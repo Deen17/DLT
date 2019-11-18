@@ -15,6 +15,7 @@ import {MatTableModule} from '@angular/material/table';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatSortModule} from '@angular/material/sort';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatDialogModule} from '@angular/material/dialog';
 
 import { LoginComponent } from './login/login.component';
 import { BankComponent } from './bank/bank.component';
@@ -47,6 +48,7 @@ import { CreateTransactionComponent } from './create-transaction/create-transact
     MatPaginatorModule,
     MatProgressSpinnerModule,
     MatSortModule,
+    MatDialogModule
   ],
   providers: [],
   bootstrap: [AppComponent]
