@@ -176,13 +176,14 @@ async def process_settled(transactions):
         finished_deque.append(tx)
 
 
-@app.timer(interval=1.0)
+@app.timer(interval=1.5)
 async def every_second():
     """Every second, this worker pops at most 300 transactions from the
     deque of settled transactions ready to be committed to Redis, then
     sends all of these transactions together, atomically."""
     async with await client.pipeline() as pipe:
-        for tx in finished_deque:
+        while finished_deque:
+            tx = finished_deque.popleft()
             for mutation in tx.mutations:
                 for key, value in mutation.items():
                     if key[0:5] == "user:":
