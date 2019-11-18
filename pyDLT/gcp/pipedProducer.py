@@ -7,7 +7,7 @@ import time
 
 start_time = 0
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092', # 02:40 AM02:40 AM02:40 AMnoqa
+    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092', # noqa
     'client.id': 'test1',
 }
 

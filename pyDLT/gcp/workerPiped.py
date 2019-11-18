@@ -1,13 +1,14 @@
 # how to run this
 # go to directory local to this file, then run:
-# faust -A gcpplain worker -l info --web-port 6067
+# faust -A workerPiped worker -l info --web-port 6067
 import faust
 from typing import List
 # import time
 from aredis import StrictRedis
+from collections import deque
 
-
-bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092;kafka://34.74.86.119:19092' # noqa
+finished_deque = deque()
+bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092;kafka://34.74.86.119:19092'  # noqa
 app = faust.App('myapp1',
                 broker=bootstrap)
 client = StrictRedis(
@@ -90,7 +91,7 @@ async def process(transactions):
     appropriate place"""
     async for transaction in transactions:
         datopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA"
-        print("initiated->DA")
+        # print("initiated->DA")
         # send this transaction to its appropriate sender's bank
         # await app.commit("initiated_transactions")
         await app.topic(datopic,
@@ -111,7 +112,7 @@ async def bankA_DA_process(transactions):
         transaction.amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
         catopic += "_CA"
-        print("DA->CA")
+        # print("DA->CA")
         # await app.commit("bankA_DA")
         await app.topic(catopic,
                         key_type=bytes,
@@ -131,7 +132,7 @@ async def bankB_DA_process(transactions):
         transaction.amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
         catopic += "_CA"
-        print("DA->CA")
+        # print("DA->CA")
         # await app.commit("bankB_DA")
         await app.topic(catopic,
                         key_type=bytes,
@@ -148,7 +149,7 @@ async def bankA_CA_process(transactions):
         mutation = {bankacc: take}
         transaction.mutations.append(mutation)
         transaction.amt -= take
-        print("CA->settled")
+        # print("CA->settled")
         # await app.commit("bankA_CA")
         await settled.send(value=transaction)
 
@@ -163,7 +164,7 @@ async def bankB_CA_process(transactions):
         mutation = {bankacc: take}
         transaction.mutations.append(mutation)
         transaction.amt -= take
-        print("ca->settled")
+        # print("ca->settled")
         # await app.commit("bankB_CA")
         await settled.send(value=transaction)
 
@@ -172,7 +173,16 @@ async def bankB_CA_process(transactions):
 async def process_settled(transactions):
     """This function will cause all of the state changes to accounts."""
     async for tx in transactions:
-        async with await client.pipeline() as pipe:
+        finished_deque.append(tx)
+
+
+@app.timer(interval=1.0)
+async def every_second():
+    """Every second, this worker pops at most 300 transactions from the
+    deque of settled transactions ready to be committed to Redis, then
+    sends all of these transactions together, atomically."""
+    async with await client.pipeline() as pipe:
+        for tx in finished_deque:
             for mutation in tx.mutations:
                 for key, value in mutation.items():
                     if key[0:5] == "user:":
@@ -222,12 +232,9 @@ async def process_settled(transactions):
                 )
             # push to the ready queue for this transaction
             await pipe.rpush(ready_transaction, 0)
-            # execute the entire transaction/pipeline
-            # await app.commit('settled_transactions')
-            print("settled")
-            res = await pipe.execute() # noqa
-            # print(res)
-
+            # execute the entire pipeline
+        res = await pipe.execute()  # noqa
+        # print(res)
 
 if __name__ == '__main__':
     app.main()
