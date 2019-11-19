@@ -23,6 +23,7 @@ import { UserListComponent } from './user-list/user-list.component';
 import { AccountComponent } from './account/account.component';
 import { TransactionListComponent } from './transaction-list/transaction-list.component';
 import { CreateTransactionComponent } from './create-transaction/create-transaction.component';
+import { DelayedTransactionsComponent } from './delayed-transactions/delayed-transactions.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { CreateTransactionComponent } from './create-transaction/create-transact
     UserListComponent,
     AccountComponent,
     TransactionListComponent,
-    CreateTransactionComponent
+    CreateTransactionComponent,
+    DelayedTransactionsComponent
   ],
   imports: [
     BrowserModule,

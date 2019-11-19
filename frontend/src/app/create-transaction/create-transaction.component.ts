@@ -31,6 +31,13 @@ export class CreateTransactionComponent implements OnInit {
     if (response.response == "0"){
       alert('transaction completed!')
     }
+    else if (response.response == "1"){
+      alert('your transaction has been delayed! :(')
+    }
+    else if(response.response == "2"){
+      alert('failed to send transaction!')
+    }
+    else console.log('response.response,', response.response)
   }
 
   ngOnInit() {

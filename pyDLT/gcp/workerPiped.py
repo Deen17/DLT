@@ -79,10 +79,11 @@ bankA_CA = app.topic('bankA_CA',
 bankB_CA = app.topic('bankB_CA',
                      key_type=bytes,
                      value_type=initiated)
-over10k = []
 
-
-debtor_agent = app.channel()  # in-memory buffer
+delayed_transactions = app.topic(
+    'delayed_transactions',
+    key_type=bytes,
+    value_type=initiated)
 
 
 @app.agent(initiated_topic)
@@ -91,10 +92,20 @@ async def process(transactions):
     appropriate place"""
     async for transaction in transactions:
         datopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA"
-        # print("initiated->DA")
         # send this transaction to its appropriate sender's bank
-        # await app.commit("initiated_transactions")
         await app.topic(datopic,
+                        key_type=bytes,
+                        value_type=initiated).send(value=transaction)
+
+
+@app.agent(delayed_transactions)
+async def sendFromDelayedToCA(transactions):
+    """Reroutes messages after getting passed the delayed phase to the appropriate
+    Creditor Agent."""
+    async for transaction in transactions:
+        catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
+        catopic += "_CA"
+        await app.topic(catopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
 
@@ -105,18 +116,35 @@ async def bankA_DA_process(transactions):
     This process then deducts that amount from the amount,
     then route the transaction to the Receiver's Bank"""
     async for transaction in transactions:
-        take = transaction.initial_amt * .5
-        bankacc = "user:{}0000".format(transaction.senderRoutingNum)
-        message = {bankacc: take}
-        transaction.mutations.append(message)
-        transaction.amt -= take
-        catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
-        catopic += "_CA"
-        # print("DA->CA")
-        # await app.commit("bankA_DA")
-        await app.topic(catopic,
-                        key_type=bytes,
-                        value_type=initiated).send(value=transaction)
+        print(transaction.settled)
+        if transaction.initial_amt >= 10000 and settled == False:
+            print(transaction)
+            async with await client.pipeline() as pipe:
+                delayedtx = "delayedtx:{}".format(transaction.transactionID)
+                await pipe.hmset(
+                    delayedtx,
+                    to_dict(transaction))
+                bankdelays = 'bankdelays:{}'.format(
+                    transaction.senderRoutingNum)
+                await pipe.zadd(
+                    bankdelays,
+                    transaction.transactionID,
+                    transaction.transactionID)
+                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1)
+                res = await pipe.execute()
+        else:
+            take = transaction.initial_amt * .5
+            bankacc = "user:{}0000".format(transaction.senderRoutingNum)
+            message = {bankacc: take}
+            transaction.mutations.append(message)
+            transaction.amt -= take
+            catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
+            catopic += "_CA"
+            # print("DA->CA")
+            # await app.commit("bankA_DA")
+            await app.topic(catopic,
+                            key_type=bytes,
+                            value_type=initiated).send(value=transaction)
 
 
 @app.agent(bankB_DA)
@@ -125,18 +153,33 @@ async def bankB_DA_process(transactions):
     This process then deducts that amount from the amount,
     then route the transaction to the Receiver's Bank"""
     async for transaction in transactions:
-        take = transaction.initial_amt * .5
-        bankacc = "user:{}0000".format(transaction.senderRoutingNum)
-        mutation = {bankacc: take}
-        transaction.mutations.append(mutation)
-        transaction.amt -= take
-        catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
-        catopic += "_CA"
-        # print("DA->CA")
-        # await app.commit("bankB_DA")
-        await app.topic(catopic,
-                        key_type=bytes,
-                        value_type=initiated).send(value=transaction)
+        if transaction.initial_amt >= 10000:
+            async with await client.pipeline() as pipe:
+                delayedtx = "delayedtx:{}".format(transaction.transactionID)
+                await pipe.hmset(
+                    delayedtx,
+                    to_dict(transaction))
+                bankdelays = 'bankdelays:{}'.format(
+                    transaction.senderRoutingNum)
+                await pipe.zadd(
+                    bankdelays,
+                    transaction.transactionID,
+                    transaction.transactionID)
+                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1)
+                res = await pipe.execute()  # noqa
+        else:
+            take = transaction.initial_amt * .5
+            bankacc = "user:{}0000".format(transaction.senderRoutingNum)
+            mutation = {bankacc: take}
+            transaction.mutations.append(mutation)
+            transaction.amt -= take
+            catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
+            catopic += "_CA"
+            # print("DA->CA")
+            # await app.commit("bankB_DA")
+            await app.topic(catopic,
+                            key_type=bytes,
+                            value_type=initiated).send(value=transaction)
 
 
 @app.agent(bankA_CA)

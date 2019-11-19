@@ -5,6 +5,7 @@ import { AccountComponent } from './account/account.component';
 import { UserListComponent } from './user-list/user-list.component';
 import { CreateTransactionComponent } from './create-transaction/create-transaction.component';
 import { TransactionListComponent } from './transaction-list/transaction-list.component';
+import { DelayedTransactionsComponent } from './delayed-transactions/delayed-transactions.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -12,7 +13,7 @@ const routes: Routes = [
   { path: 'users', component: UserListComponent },
   { path: 'createtransaction', component: CreateTransactionComponent },
   { path: 'transactions', component: TransactionListComponent, data: {delayed: false} },
-  { path: 'delayed', component: TransactionListComponent, data: {delayed : true}}
+  { path: 'delayed', component: DelayedTransactionsComponent}
 ];
 
 @NgModule({

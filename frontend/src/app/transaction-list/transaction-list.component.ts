@@ -8,8 +8,7 @@ import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog
 /**
  * @name TransactionListComponent
  * @description Displays a table of transactions. Clicking a transactionID
- * allows one to peruse the details of that specific transaction. The table
- * itself only shows Transaction ID
+ * allows one to peruse the details of that specific transaction.
  * 
  */
 @Component({
@@ -20,10 +19,9 @@ import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog
 export class TransactionListComponent implements OnInit {
   transactionCount: number;
   transactionIDs: string[];
-  //transactionRows = new MatTableDataSource<transactionRow>([]);
   transactionData: transactionRow[] = [];
   transactionColumns = ['transactionID','senderAccNum'];
-  transactionJSONArray = [];
+  //transactionJSONArray = [];
   constructor(
     private api: ApiService,
     public dialog: MatDialog

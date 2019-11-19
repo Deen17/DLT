@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError, Subject } from "rxjs"
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http'
 import { retry, catchError } from 'rxjs/operators';
-import { TransactionResponse, Transaction, convertResponseToTransaction} from './transaction'
+import { TransactionResponse, Transaction, transactionRow, convertResponseToTransaction } from './transaction'
 
 export interface LoginResponse {
   isBank: boolean;
@@ -11,7 +11,7 @@ export interface LoginResponse {
   routingNum: string;
 }
 
-export interface TransactionListResponse{
+export interface TransactionListResponse {
   transactions: string[];
 }
 
@@ -63,7 +63,7 @@ export class TransactionForm {
       amt: this.amt,
       initial_amt: this.amt,
       receiverAcctNum: this.receiverAcctNum,
-      receiverRoutingNum: this.receiverAcctNum,
+      receiverRoutingNum: this.receiverRoutingNum,
       currency: 'USD',
       instrument: this.instrument,
       mutations: [],
@@ -146,15 +146,28 @@ export class ApiService {
     return response.toPromise()
   }
 
-  getTransactionDetailsByID(id: string): Promise<TransactionResponse>{
+  getTransactionDetailsByID(id: string): Promise<TransactionResponse> {
     let response = this.http.get<TransactionResponse>(
       `${this.httpsUrl}/transaction/${id}`,
       httpOptions
     )
-    .pipe(
-      retry(3),
-      catchError(this.handleError)
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      )
+
+    return response.toPromise()
+  }
+
+  getDelayedTransactionDetailsByID(id: string): Promise<TransactionResponse> {
+    let response = this.http.get<TransactionResponse>(
+      `${this.httpsUrl}/delayedtx/${id}`,
+      httpOptions
     )
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      )
 
     return response.toPromise()
   }
@@ -198,8 +211,35 @@ export class ApiService {
     return response.toPromise();
   }
 
+  getDelayedTransactionCountByBankID(id: string): Promise<TransactionCountResponse> {
+    let response = this.http.get<TransactionCountResponse>(
+      `${this.httpsUrl}/banks/${id}/delayedcount`,
+      httpOptions
+    )
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      )
+
+    return response.toPromise();
+  }
+
+  getDelayedTransactionsByBankID(
+    id: string): Promise<TransactionListResponse> {
+    let response = this.http.get<TransactionListResponse>(
+      `${this.httpsUrl}/banks/${id}/delayedtransactions`,
+      httpOptions
+    )
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      )
+    return response.toPromise();
+
+  }
+
   getTransactionsByUserID(
-    id: string) : Promise<TransactionListResponse> {
+    id: string): Promise<TransactionListResponse> {
     let response = this.http.get<TransactionListResponse>(
       `${this.httpsUrl}/users/${id}/transactions`,
       httpOptions
@@ -209,7 +249,7 @@ export class ApiService {
         catchError(this.handleError)
       )
     return response.toPromise();
-    
+
   }
 
   getTransactionsByStart(
@@ -242,6 +282,22 @@ export class ApiService {
     return response.toPromise();
   }
 
+  getDelayedTransactionsByStartEnd(
+    id: string,
+    start: number,
+    end: number
+  ): Promise<TransactionListResponse> {
+    let response = this.http.get<TransactionListResponse>(
+      `${this.httpsUrl}/banks/${id}/delayedtransactions/${start}/${end}`,
+      httpOptions
+    )
+      .pipe(
+        retry(3),
+        catchError(this.handleError)
+      )
+    return response.toPromise();
+  }
+
   /**
    * Post a Transaction.
    * @param {}
@@ -259,4 +315,30 @@ export class ApiService {
     return response.toPromise();
   }
 
+  postUndelay(transaction: transactionRow): Promise<TransactionProcessingResponse> {
+    let response = this.http.post<TransactionProcessingResponse>(
+      `${this.httpsUrl}/banks/acceptDelay`,
+      {
+        'transactionID': transaction.transactionID,
+        'senderAcctNum': transaction.senderAccNum,
+        'senderRoutingNum': transaction.senderRoutingNum,
+        'receiverAcctNum': transaction.receiverAccNum,
+        'receiverRoutingNum': transaction.receiverRoutingNum,
+        'initial_amt': +transaction.initial_amt,
+        'amt': +transaction.amt,
+        'currency': transaction.currency,
+        'instrument': transaction.instrument,
+        'settled': transaction.settled, //POSSIBLY PROBLEMATIC
+        'mutations': transaction.mutations
+      },
+      httpOptions
+    )
+    .pipe(
+      catchError(this.handleError)
+    )
+
+    return response.toPromise()
+  }
 }
+
+

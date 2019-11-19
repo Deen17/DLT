@@ -7,7 +7,7 @@ from typing import List
 from aredis import StrictRedis
 
 
-bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092;kafka://34.74.86.119:19092' # noqa
+bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092;kafka://34.74.86.119:19092'  # noqa
 app = faust.App('myapp1',
                 broker=bootstrap)
 client = StrictRedis(
@@ -111,7 +111,6 @@ async def bankA_DA_process(transactions):
         transaction.amt -= take
         catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
         catopic += "_CA"
-        print("DA->CA")
         # await app.commit("bankA_DA")
         await app.topic(catopic,
                         key_type=bytes,
@@ -225,7 +224,7 @@ async def process_settled(transactions):
             # execute the entire transaction/pipeline
             # await app.commit('settled_transactions')
             print("settled")
-            res = await pipe.execute() # noqa
+            res = await pipe.execute()  # noqa
             # print(res)
 
 
