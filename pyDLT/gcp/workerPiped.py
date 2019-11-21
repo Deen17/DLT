@@ -133,7 +133,7 @@ async def bankA_DA_process(transactions):
                 await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1) # noqa
                 res = await pipe.execute() # noqa
         else:
-            take = transaction.initial_amt * .5
+            take = transaction.initial_amt * .05
             bankacc = "user:{}0000".format(transaction.senderRoutingNum)
             message = {bankacc: take}
             transaction.mutations.append(message)
@@ -165,10 +165,10 @@ async def bankB_DA_process(transactions):
                     bankdelays,
                     transaction.transactionID,
                     transaction.transactionID)
-                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1)
+                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1) # noqa
                 res = await pipe.execute()  # noqa
         else:
-            take = transaction.initial_amt * .5
+            take = transaction.initial_amt * .1
             bankacc = "user:{}0000".format(transaction.senderRoutingNum)
             mutation = {bankacc: take}
             transaction.mutations.append(mutation)
@@ -187,7 +187,7 @@ async def bankA_CA_process(transactions):
     """The Creditor Agent processes this transaction. Here, it has the chance
     to take some percentage of of the initial amount, as well. Just for fun."""
     async for transaction in transactions:
-        take = transaction.initial_amt * .5
+        take = transaction.initial_amt * .05
         bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
         mutation = {bankacc: take}
         transaction.mutations.append(mutation)
@@ -202,7 +202,7 @@ async def bankB_CA_process(transactions):
     """The Creditor Agent processes this transaction. Here, it has the chance
     to take some percentage of of the initial amount, as well. Just for fun."""
     async for transaction in transactions:
-        take = transaction.initial_amt * .5
+        take = transaction.initial_amt * .1
         bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
         mutation = {bankacc: take}
         transaction.mutations.append(mutation)
