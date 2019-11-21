@@ -1,0 +1,55 @@
+<!-- Toolbar -->
+<div class="toolbar" role="banner">
+  <mat-toolbar id="noneToolbar" *ngIf="!isLoggedIn" color="accent">
+
+  </mat-toolbar>
+  <mat-toolbar id="bankToolbar" *ngIf="isLoggedIn && isBank" color="primary">
+    <a [routerLink]="['/account']" routerLinkActive="active">
+      <button mat-button color="accent">Account</button>
+    </a>
+    <a [routerLink]="['/users']" routerLinkActive="active">
+      <button mat-button color="accent">Users</button>
+    </a>
+    <a [routerLink]="['/transactions']" routerLinkActive="active">
+      <button mat-button color="accent">Transactions</button>
+    </a>
+    <a [routerLink]="['/delayed']" routerLinkActive="active">
+      <button mat-button color="accent">Delayed Transactions</button>
+    </a>
+  </mat-toolbar>
+  <mat-toolbar id="userToolbar" *ngIf="isLoggedIn && !isBank" color="primary">
+    <a [routerLink]="['/account']" routerLinkActive="active">
+      <button mat-button color="accent">Account</button>
+    </a>
+    <a [routerLink]="['/transactions']" routerLinkActive="active">
+      <button mat-button color="accent">Transactions</button>
+    </a>
+    <a [routerLink]="['/createtransaction']" routerLinkActive="active">
+      <button mat-button color="accent">Make Transaction</button>
+    </a>
+  </mat-toolbar>
+  <div class="spacer"></div>
+</div>
+
+<main>
+
+  <div class="row">
+    <div class="column left">
+
+    </div>
+
+    <div class="column middle">
+      <router-outlet></router-outlet>
+    </div>
+
+    <div class="column right">
+
+    </div>
+  </div>
+
+
+  <!-- Footer -->
+  <footer>
+  </footer>
+
+</main>

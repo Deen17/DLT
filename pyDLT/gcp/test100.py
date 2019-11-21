@@ -5,14 +5,18 @@ import time
 import redis
 
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092,131.247.3.206:9092',
+    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092', # noqa
     'client.id': 'test1',
 }
 
 producer = Producer(conf)
-client = redis.StrictRedis(host='127.0.0.1',
-                           port=6379,
-                           db=0)
+node1 = 'clustercfg.redis-cluster.drf52m.use1.cache.amazonaws.com'
+client = redis.StrictRedis(
+    # host='127.0.0.1',
+    host='104.196.105.254',
+    port=6379,
+    db=0)
+
 # value = {
 #     "transactionID": "000000000000",
 #     "senderAcctNum": "161",
@@ -39,7 +43,7 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 100):
+    for i in range(0, 3334):
         # x = random.randint(0, 20000)
 
         value = {
@@ -52,15 +56,18 @@ async def main():
             "initial_amt": 100,
             "amt": 100,
             "instrument": "credit",
+            "settled": "False",
             "mutations": []
         }
-        
+
         b = json.dumps(value).encode('utf-8')
         producer.produce('initiated_transactions',
                          # key='1'.encode('utf-8'),
                          key=None,
                          value=b,
                          on_delivery=on_callback)
+        if (i % 100000 == 0):
+            producer.flush()
     producer.flush()
     print("%f seconds" % ((time.process_time_ns() - start) / 1000000000))
     print(time.time())
