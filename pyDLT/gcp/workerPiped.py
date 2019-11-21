@@ -117,7 +117,7 @@ async def bankA_DA_process(transactions):
     then route the transaction to the Receiver's Bank"""
     async for transaction in transactions:
         print(transaction.settled)
-        if transaction.initial_amt >= 10000 and settled == False:
+        if transaction.initial_amt >= 10000 and settled is False:
             print(transaction)
             async with await client.pipeline() as pipe:
                 delayedtx = "delayedtx:{}".format(transaction.transactionID)
@@ -130,8 +130,8 @@ async def bankA_DA_process(transactions):
                     bankdelays,
                     transaction.transactionID,
                     transaction.transactionID)
-                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1)
-                res = await pipe.execute()
+                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1) # noqa
+                res = await pipe.execute() # noqa
         else:
             take = transaction.initial_amt * .5
             bankacc = "user:{}0000".format(transaction.senderRoutingNum)
