@@ -5,7 +5,7 @@ import time
 import redis
 
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092', # noqa
+    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092',  # noqa
     'client.id': 'test1',
 }
 
@@ -43,7 +43,7 @@ start = time.process_time_ns()
 
 
 async def main():
-    for i in range(0, 3334):
+    for i in range(0, 60000):
         # x = random.randint(0, 20000)
 
         value = {

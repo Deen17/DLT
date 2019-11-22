@@ -14,7 +14,7 @@ async def setInitialState():
         "name": "Adil",
         "accNo": "0001",
         "routingNo": "0001",
-        "balance": 10000,
+        "balance": 0,
     }
     user1balance = {
         "name": user1dict["name"],
@@ -26,7 +26,7 @@ async def setInitialState():
         "name": "Boyang",
         "accNo": "0001",
         "routingNo": "0002",
-        "balance": 10000,
+        "balance": 0,
     }
     user2balance = {
         "name": user2dict["name"],
@@ -48,6 +48,17 @@ async def setInitialState():
         "boyang": "00020001",
         "bankA": "00010000",
         "bankB": "00020000"
+    }
+    user1dict = {
+        "name": "Adil",
+        "accNo": "0001",
+        "routingNo": "0001",
+        "balance": 0,
+    }
+    user1balance = {
+        "name": user1dict["name"],
+        "balance": user1dict["balance"],
+        "password": "jpmdlt"
     }
     # await client.incr('transaction')
     await client.hmset("user:" + user1dict["routingNo"] + user1dict["accNo"],

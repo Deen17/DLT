@@ -116,7 +116,7 @@ async def bankA_DA_process(transactions):
     This process then deducts that amount from the amount,
     then route the transaction to the Receiver's Bank"""
     async for transaction in transactions:
-        print(transaction.settled)
+        # print(transaction.settled)
         if transaction.initial_amt >= 10000 and settled is False:
             print(transaction)
             async with await client.pipeline() as pipe:
