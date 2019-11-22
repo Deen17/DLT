@@ -69,7 +69,7 @@ var getDelayedTransactions = async function (id, start = 0, end = -1) {
 }
 
 app.use(cors())
-app.use(forceSSL)
+// app.use(forceSSL)
 app.use(function (req, res, next) {
     let today = new Date();
     console.log(today.getMonth() + '/' +

@@ -46,16 +46,17 @@ async def setInitialState():
     usernames = {
         "adil": "00010001",
         "boyang": "00020001",
+        "sabreen": "00020002",
         "bankA": "00010000",
         "bankB": "00020000"
     }
-    user1dict = {
-        "name": "Adil",
-        "accNo": "0001",
-        "routingNo": "0001",
+    user3dict = {
+        "name": "Sabreen",
+        "accNo": "0002",
+        "routingNo": "0002",
         "balance": 0,
     }
-    user1balance = {
+    user3balance = {
         "name": user1dict["name"],
         "balance": user1dict["balance"],
         "password": "jpmdlt"
@@ -65,6 +66,10 @@ async def setInitialState():
                        user1balance)
     await client.hmset("user:" + user2dict["routingNo"] + user2dict["accNo"],
                        user2balance)
+
+    await client.hmset("user:" + user3dict["routingNo"] + user3dict["accNo"],
+                       user3balance)
+
     await client.hmset("user:" + "00010000",
                        bankAbalance)
     await client.hmset("user:" + "00020000",
