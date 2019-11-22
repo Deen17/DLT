@@ -5,7 +5,7 @@ import time
 import redis
 
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092',
+    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092', # noqa
     'client.id': 'test1',
 }
 
@@ -13,7 +13,7 @@ producer = Producer(conf)
 node1 = 'clustercfg.redis-cluster.drf52m.use1.cache.amazonaws.com'
 client = redis.StrictRedis(
     # host='127.0.0.1',
-    host='35.196.186.57',
+    host='104.196.105.254',
     port=6379,
     db=0)
 

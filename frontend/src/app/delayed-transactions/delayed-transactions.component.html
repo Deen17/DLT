@@ -1,14 +1,14 @@
 <h1>Transaction List</h1>
 <h2>Count: {{this.transactionCount}}</h2>
-<mat-card *ngFor="let transaction of transactionData" class=card>
+<mat-card *ngFor="let transaction of delayedTransactionData; index as i" class=card>
     <mat-card-header>
         <mat-card-title>Transaction Details</mat-card-title>
         <mat-card-subtitle>ID: {{transaction.transactionID}}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
         <p>Sent amount: ${{transaction.initial_amt}}</p>
-        <p>Sender Account Number: {{transaction.senderRoutingNum}}{{transaction.senderAccNum}}</p>
-        <p>Receiver Account Number: {{transaction.receiverRoutingNum}}{{transaction.receiverAccNum}}</p>
+        <p>Sender Account Number: {{transaction.senderRoutingNum}}{{transaction.senderAcctNum}}</p>
+        <p>Receiver Account Number: {{transaction.receiverRoutingNum}}{{transaction.receiverAcctNum}}</p>
         <p>Receiver's amount: ${{transaction.amt}}</p>
         <p>Instrument: {{transaction.instrument}}</p>
     </mat-card-content>

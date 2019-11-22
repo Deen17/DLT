@@ -1,12 +1,13 @@
 # how to run this
 # go to directory local to this file, then run:
-# faust -A gcpplain worker -l info --web-port 6067
+# faust -A workerPiped worker -l info --web-port 6067
 import faust
 from typing import List
 # import time
 from aredis import StrictRedis
+from collections import deque
 
-
+finished_deque = deque()
 bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092;kafka://34.74.86.119:19092'  # noqa
 app = faust.App('myapp1',
                 broker=bootstrap)
@@ -78,10 +79,11 @@ bankA_CA = app.topic('bankA_CA',
 bankB_CA = app.topic('bankB_CA',
                      key_type=bytes,
                      value_type=initiated)
-over10k = []
 
-
-debtor_agent = app.channel()  # in-memory buffer
+delayed_transactions = app.topic(
+    'delayed_transactions',
+    key_type=bytes,
+    value_type=initiated)
 
 
 @app.agent(initiated_topic)
@@ -90,10 +92,20 @@ async def process(transactions):
     appropriate place"""
     async for transaction in transactions:
         datopic = bank_switcher.get(int(transaction.senderRoutingNum)) + "_DA"
-        print("initiated->DA")
         # send this transaction to its appropriate sender's bank
-        # await app.commit("initiated_transactions")
         await app.topic(datopic,
+                        key_type=bytes,
+                        value_type=initiated).send(value=transaction)
+
+
+@app.agent(delayed_transactions)
+async def sendFromDelayedToCA(transactions):
+    """Reroutes messages after getting passed the delayed phase to the appropriate
+    Creditor Agent."""
+    async for transaction in transactions:
+        catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
+        catopic += "_CA"
+        await app.topic(catopic,
                         key_type=bytes,
                         value_type=initiated).send(value=transaction)
 
@@ -104,17 +116,35 @@ async def bankA_DA_process(transactions):
     This process then deducts that amount from the amount,
     then route the transaction to the Receiver's Bank"""
     async for transaction in transactions:
-        take = transaction.initial_amt * .5
-        bankacc = "user:{}0000".format(transaction.senderRoutingNum)
-        message = {bankacc: take}
-        transaction.mutations.append(message)
-        transaction.amt -= take
-        catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
-        catopic += "_CA"
-        # await app.commit("bankA_DA")
-        await app.topic(catopic,
-                        key_type=bytes,
-                        value_type=initiated).send(value=transaction)
+        print(transaction.settled)
+        if transaction.initial_amt >= 10000 and settled is False:
+            print(transaction)
+            async with await client.pipeline() as pipe:
+                delayedtx = "delayedtx:{}".format(transaction.transactionID)
+                await pipe.hmset(
+                    delayedtx,
+                    to_dict(transaction))
+                bankdelays = 'bankdelays:{}'.format(
+                    transaction.senderRoutingNum)
+                await pipe.zadd(
+                    bankdelays,
+                    transaction.transactionID,
+                    transaction.transactionID)
+                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1) # noqa
+                res = await pipe.execute() # noqa
+        else:
+            take = transaction.initial_amt * .05
+            bankacc = "user:{}0000".format(transaction.senderRoutingNum)
+            message = {bankacc: take}
+            transaction.mutations.append(message)
+            transaction.amt -= take
+            catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
+            catopic += "_CA"
+            # print("DA->CA")
+            # await app.commit("bankA_DA")
+            await app.topic(catopic,
+                            key_type=bytes,
+                            value_type=initiated).send(value=transaction)
 
 
 @app.agent(bankB_DA)
@@ -123,18 +153,33 @@ async def bankB_DA_process(transactions):
     This process then deducts that amount from the amount,
     then route the transaction to the Receiver's Bank"""
     async for transaction in transactions:
-        take = transaction.initial_amt * .5
-        bankacc = "user:{}0000".format(transaction.senderRoutingNum)
-        mutation = {bankacc: take}
-        transaction.mutations.append(mutation)
-        transaction.amt -= take
-        catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
-        catopic += "_CA"
-        print("DA->CA")
-        # await app.commit("bankB_DA")
-        await app.topic(catopic,
-                        key_type=bytes,
-                        value_type=initiated).send(value=transaction)
+        if transaction.initial_amt >= 10000:
+            async with await client.pipeline() as pipe:
+                delayedtx = "delayedtx:{}".format(transaction.transactionID)
+                await pipe.hmset(
+                    delayedtx,
+                    to_dict(transaction))
+                bankdelays = 'bankdelays:{}'.format(
+                    transaction.senderRoutingNum)
+                await pipe.zadd(
+                    bankdelays,
+                    transaction.transactionID,
+                    transaction.transactionID)
+                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1) # noqa
+                res = await pipe.execute()  # noqa
+        else:
+            take = transaction.initial_amt * .1
+            bankacc = "user:{}0000".format(transaction.senderRoutingNum)
+            mutation = {bankacc: take}
+            transaction.mutations.append(mutation)
+            transaction.amt -= take
+            catopic = bank_switcher.get(int(transaction.receiverRoutingNum))
+            catopic += "_CA"
+            # print("DA->CA")
+            # await app.commit("bankB_DA")
+            await app.topic(catopic,
+                            key_type=bytes,
+                            value_type=initiated).send(value=transaction)
 
 
 @app.agent(bankA_CA)
@@ -142,12 +187,12 @@ async def bankA_CA_process(transactions):
     """The Creditor Agent processes this transaction. Here, it has the chance
     to take some percentage of of the initial amount, as well. Just for fun."""
     async for transaction in transactions:
-        take = transaction.initial_amt * .5
+        take = transaction.initial_amt * .05
         bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
         mutation = {bankacc: take}
         transaction.mutations.append(mutation)
         transaction.amt -= take
-        print("CA->settled")
+        # print("CA->settled")
         # await app.commit("bankA_CA")
         await settled.send(value=transaction)
 
@@ -157,12 +202,12 @@ async def bankB_CA_process(transactions):
     """The Creditor Agent processes this transaction. Here, it has the chance
     to take some percentage of of the initial amount, as well. Just for fun."""
     async for transaction in transactions:
-        take = transaction.initial_amt * .5
+        take = transaction.initial_amt * .1
         bankacc = "user:{}0000".format(transaction.receiverRoutingNum)
         mutation = {bankacc: take}
         transaction.mutations.append(mutation)
         transaction.amt -= take
-        print("ca->settled")
+        # print("ca->settled")
         # await app.commit("bankB_CA")
         await settled.send(value=transaction)
 
@@ -171,7 +216,17 @@ async def bankB_CA_process(transactions):
 async def process_settled(transactions):
     """This function will cause all of the state changes to accounts."""
     async for tx in transactions:
-        async with await client.pipeline() as pipe:
+        finished_deque.append(tx)
+
+
+@app.timer(interval=1.5)
+async def every_second():
+    """Every second, this worker pops at most 300 transactions from the
+    deque of settled transactions ready to be committed to Redis, then
+    sends all of these transactions together, atomically."""
+    async with await client.pipeline() as pipe:
+        while finished_deque:
+            tx = finished_deque.popleft()
             for mutation in tx.mutations:
                 for key, value in mutation.items():
                     if key[0:5] == "user:":
@@ -221,12 +276,9 @@ async def process_settled(transactions):
                 )
             # push to the ready queue for this transaction
             await pipe.rpush(ready_transaction, 0)
-            # execute the entire transaction/pipeline
-            # await app.commit('settled_transactions')
-            print("settled")
-            res = await pipe.execute()  # noqa
-            # print(res)
-
+            # execute the entire pipeline
+        res = await pipe.execute()  # noqa
+        # print(res)
 
 if __name__ == '__main__':
     app.main()

@@ -19,17 +19,17 @@
 
   .left {
     width: 14%;
-    background-color:#aaa
+    /* background-color:#aaa */
   }
 
   .middle {
     width: 71%;
-    background-color: #bbb;
+    /* background-color: #bbb; */
   }
 
   .right {
     width: 11%;
-    background-color:#ccc;
+    /* background-color:#ccc; */
   }
 
   .row:after {

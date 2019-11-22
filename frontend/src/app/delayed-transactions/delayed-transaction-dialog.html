@@ -1,0 +1,12 @@
+<h1 mat-dialog-title>Transaction {{data.transactionID}}</h1>
+<div mat-dialog-content>
+  <p>Sent amount: ${{data.initial_amt}}</p>
+  <p>Sender Account Number: {{data.senderRoutingNum}}{{data.senderAccNum}}</p>
+  <p>Receiver Account Number: {{data.receiverRoutingNum}}{{data.receiverAccNum}}</p>
+  <p>Receiver's amount: ${{data.amt}}</p>
+  <p>Instrument: {{data.instrument}}</p>
+</div>
+<!-- <div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">No Thanks</button>
+  <button mat-button [mat-dialog-close]="data.animal" cdkFocusInitial>Ok</button>
+</div> -->

@@ -48,7 +48,7 @@ let HighLevelProducer = kafka.HighLevelProducer,
 
 var getTransactions = async function (id, start = 0, end = -1) {
     console.log(`GET /users/${id}/transactions/${start}/${end}`)
-    let transactions = await client.zrangeAsync(
+    let transactions = await client.zrevrangeAsync(
         `transactions:${id}`,
         start,
         end)
@@ -57,6 +57,16 @@ var getTransactions = async function (id, start = 0, end = -1) {
     })
 }
 
+var getDelayedTransactions = async function (id, start = 0, end = -1) {
+    console.log(`GET /banks/${id}/delayedtransactions/${start}/${end}`)
+    let transactions = await client.zrevrangeAsync(
+        `bankdelays:${id}`,
+        start,
+        end)
+    return ({
+        'transactions': transactions
+    })
+}
 
 app.use(cors())
 app.use(forceSSL)
@@ -88,6 +98,31 @@ app.get('/test', asyncMiddleware(async (req, res, next) => {
     res.send({
         'test': x
     })
+}))
+
+
+/**
+ * @title getTransactionDetailsByID
+ * @param {string} id
+ * @returns {Object}
+ */
+app.get('/transaction/:id', asyncMiddleware(async (req, res, next) => {
+    let transaction = await client.hgetallAsync(
+        `transactionID:${req.params.id}`
+    )
+    res.send(transaction)
+}))
+
+/**
+ * @title getDelayedTransactionDetailsByID
+ * @param {string} id
+ * @returns {Object}
+ */
+app.get('/delayedtx/:id', asyncMiddleware(async (req, res, next) => {
+    let transaction = await client.hgetallAsync(
+        `delayedtx:${req.params.id}`
+    )
+    res.send(transaction)
 }))
 
 app.get('/users/:id', asyncMiddleware(async (req, res, next) => {
@@ -133,6 +168,18 @@ app.get('/users/:id/transactioncount', asyncMiddleware(async (req, res, next) =>
     //res.send(response)
 }))
 
+app.get('/banks/:id/delayedcount', asyncMiddleware(async (req, res, next) => {
+    let response = await client.zcountAsync(
+        `bankdelays:${req.params.id}`,
+        -1,
+        99999999
+    )
+    res.send({
+        count: response
+    })
+    //res.send(response)
+}))
+
 /**
  * @name getTransactionsByID
  * @param {number} id
@@ -144,17 +191,37 @@ app.get('/users/:id/transactions', asyncMiddleware(async (req, res, next) => {
 }))
 
 app.get('/users/:id/transactions/:start', asyncMiddleware(async (req, res, next) => {
-    let response = await getTransactions(req.params.id, req.parms.start)
+    let response = await getTransactions(req.params.id, req.params.start)
     res.send(response)
 }))
 
 app.get('/users/:id/transactions/:start/:end', asyncMiddleware(async (req, res, next) => {
     let response = await getTransactions(
         req.params.id,
-        req.parms.start,
+        req.params.start,
         req.params.end)
     res.send(response)
 }))
+
+app.get('/banks/:id/delayedtransactions', asyncMiddleware(async (req, res, next) => {
+    let response = await getDelayedTransactions(req.params.id)
+    res.send(response)
+}))
+
+app.get('/banks/:id/delayedtransactions/:start', asyncMiddleware(async (req, res, next) => {
+    let response = await getDelayedTransactions(req.params.id, req.params.start)
+    res.send(response)
+}))
+
+app.get('/banks/:id/delayedtransactions/:start/:end', asyncMiddleware(async (req, res, next) => {
+    let response = await getDelayedTransactions(
+        req.params.id,
+        req.params.start,
+        req.params.end)
+    res.send(response)
+}))
+
+
 
 //posts
 
@@ -180,24 +247,77 @@ Response:
 */
 app.post('/users/transact', asyncMiddleware(async (req, res, next) => {
     console.log('POST /users/transact')
-    req.body['transactionID'] = (await client.incrAsync('transaction')).toString().padStart(7, '0')
+    transactionID = (await client.incrAsync('transaction'))
+    req.body['transactionID'] = transactionID.toString().padStart(7, '0')
     console.log('transaction', req.body)
 
-    // req.body['initial_amt']=req.body['initialamt']
-    // delete req.body['initialamt']
-    // console.log(req.body)
     let payload = [
-        {
+        {   
             topic: `initiated_transactions`,
             messages: JSON.stringify(req.body)
         }
     ]
-    producer.send(payload, function (err, res) {
-        if (err) console.log(err)
-        console.log('res', res)
+    producer.send(payload, function (err, producerResponse) {
+        if (err) {
+            console.log(err)
+        }
+
+        console.log('res', producerResponse)
     })
-    //
-    let val = await blockingClient.blpopAsync(`ready:${req.body.transactionID}`, 0)
+
+    let waitingClient = await client.duplicateAsync()
+
+    if (req.body['initial_amt'] >= 10000) {
+        console.log('transaction over 10000')
+        let code = await waitingClient.blpopAsync( //blocking to waitingclient
+            `readydelayed:${req.body['transactionID']}`,
+            0)
+        res.send({
+            "response": "1"
+        })
+    }
+    else {
+        console.log('transaction under 10000')
+        let val = await waitingClient.blpopAsync(`ready:${req.body['transactionID']}`, 0)
+        res.send({
+            "response": val[1]
+        })
+    }
+
+}))
+
+app.post('/banks/acceptDelay', asyncMiddleware(async (req, res, next) => {
+    console.log('POST /banks/acceptDelay')
+    req.body.mutations = []
+    req.body.settled = true
+    let letter = '';
+    switch(req.body['senderRoutingNum']){
+        case '0001':
+            letter = 'A';
+            break;
+        case '0002':
+            letter = 'B'
+            break;
+        default:
+            break;
+    }
+    let waitingClient = await client.duplicateAsync()
+    let payload = [
+        {
+            topic: `bank${letter}_DA`,
+            messages: JSON.stringify(req.body)
+        }
+    ]
+    producer.send(payload, function (err, producerResponse) {
+        if (err) {
+            console.log(err)
+            res.send({
+                "response": "2"
+            })
+        }
+        console.log('res', producerResponse)
+    })
+    let val = await waitingClient.blpopAsync(`ready:${req.body['transactionID']}`, 0) //blocking to waiting
     res.send({
         "response": val[1]
     })

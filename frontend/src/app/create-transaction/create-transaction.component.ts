@@ -25,13 +25,19 @@ export class CreateTransactionComponent implements OnInit {
       ).toTransactionRequest(
         this.api.accNum,
         this.api.routingNum)
-    console.log(req)
     let response = await this.api.postTransaction(
       req)
     console.log(response)
     if (response.response == "0"){
       alert('transaction completed!')
     }
+    else if (response.response == "1"){
+      alert('your transaction has been delayed! :(')
+    }
+    else if(response.response == "2"){
+      alert('failed to send transaction!')
+    }
+    else console.log('response.response,', response.response)
   }
 
   ngOnInit() {

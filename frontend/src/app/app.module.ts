@@ -15,6 +15,7 @@ import {MatTableModule} from '@angular/material/table';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatSortModule} from '@angular/material/sort';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatDialogModule} from '@angular/material/dialog';
 
 import { LoginComponent } from './login/login.component';
 import { BankComponent } from './bank/bank.component';
@@ -22,6 +23,7 @@ import { UserListComponent } from './user-list/user-list.component';
 import { AccountComponent } from './account/account.component';
 import { TransactionListComponent } from './transaction-list/transaction-list.component';
 import { CreateTransactionComponent } from './create-transaction/create-transaction.component';
+import { DelayedTransactionsComponent } from './delayed-transactions/delayed-transactions.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +33,8 @@ import { CreateTransactionComponent } from './create-transaction/create-transact
     UserListComponent,
     AccountComponent,
     TransactionListComponent,
-    CreateTransactionComponent
+    CreateTransactionComponent,
+    DelayedTransactionsComponent
   ],
   imports: [
     BrowserModule,
@@ -47,6 +50,7 @@ import { CreateTransactionComponent } from './create-transaction/create-transact
     MatPaginatorModule,
     MatProgressSpinnerModule,
     MatSortModule,
+    MatDialogModule
   ],
   providers: [],
   bootstrap: [AppComponent]
