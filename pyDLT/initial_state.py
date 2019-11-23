@@ -57,8 +57,8 @@ async def setInitialState():
         "balance": 0,
     }
     user3balance = {
-        "name": user1dict["name"],
-        "balance": user1dict["balance"],
+        "name": user3dict["name"],
+        "balance": user3dict["balance"],
         "password": "jpmdlt"
     }
     # await client.incr('transaction')

@@ -41,7 +41,7 @@ async def updateTransaction():
     # print(await client.zrange("test", 0, -1))
     tx_ids = deque()
     async with await client.pipeline() as pipe:
-        for i in range(0, 60000):
+        for i in range(0, 10000):
             await pipe.incr('transaction')
         tx_ids = deque(await pipe.execute())
     print("length of tx_ids:", len(tx_ids))
