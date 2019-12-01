@@ -4,7 +4,7 @@ from collections import deque
 import json
 from confluent_kafka import Producer
 import time
-
+# from configs import bootstrap, kafka_bootstrap, redis_ip
 start_time = 0
 conf = {
     'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092', # noqa
