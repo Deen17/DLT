@@ -11,7 +11,8 @@ finished_deque = deque()
 bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092;kafka://34.74.86.119:19092'  # noqa
 app = faust.App('myapp1',
                 broker=bootstrap,
-                processing_guarantee='exactly_once')
+                # processing_guarantee='exactly_once'
+                )
 client = StrictRedis(
     # host='127.0.0.1',
     host='104.196.105.254',
@@ -131,8 +132,8 @@ async def bankA_DA_process(transactions):
                     bankdelays,
                     transaction.transactionID,
                     transaction.transactionID)
-                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1) # noqa
-                res = await pipe.execute() # noqa
+                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1)  # noqa
+                res = await pipe.execute()  # noqa
         else:
             take = transaction.initial_amt * .05
             bankacc = "user:{}0000".format(transaction.senderRoutingNum)
@@ -166,7 +167,7 @@ async def bankB_DA_process(transactions):
                     bankdelays,
                     transaction.transactionID,
                     transaction.transactionID)
-                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1) # noqa
+                await pipe.rpush('readydelayed:{}'.format(transaction.transactionID), 1)  # noqa
                 res = await pipe.execute()  # noqa
         else:
             take = transaction.initial_amt * .1
