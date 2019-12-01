@@ -89,7 +89,7 @@ const asyncMiddleware = fn => (req, res, next) => {
 //Routes
 
 //gets
-app.get('/', (req, res) => res.send('Hello World!'))
+app.get('/', (req, res) => res.send('Hello World.'))
 
 app.get('/test', asyncMiddleware(async (req, res, next) => {
     console.log('test')

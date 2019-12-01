@@ -10,7 +10,8 @@ from collections import deque
 finished_deque = deque()
 bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092;kafka://34.74.86.119:19092'  # noqa
 app = faust.App('myapp1',
-                broker=bootstrap)
+                broker=bootstrap,
+                processing_guarantee='exactly_once')
 client = StrictRedis(
     # host='127.0.0.1',
     host='104.196.105.254',

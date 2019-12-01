@@ -11,7 +11,7 @@ async def setInitialState():
     await client.flushdb()
     # user A is a customer of bank A
     user1dict = {
-        "name": "Adil",
+        "name": "adil",
         "accNo": "0001",
         "routingNo": "0001",
         "balance": 0,
@@ -23,7 +23,7 @@ async def setInitialState():
     }
     # user B is a customer of bank B
     user2dict = {
-        "name": "Boyang",
+        "name": "boyang",
         "accNo": "0001",
         "routingNo": "0002",
         "balance": 0,
@@ -51,7 +51,7 @@ async def setInitialState():
         "bankB": "00020000"
     }
     user3dict = {
-        "name": "Sabreen",
+        "name": "sabreen",
         "accNo": "0002",
         "routingNo": "0002",
         "balance": 0,
