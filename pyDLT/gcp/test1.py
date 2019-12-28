@@ -1,18 +1,21 @@
 from confluent_kafka import Producer
-import json
 import asyncio
 import time
 import redis
+import json
+
+with open('config.json') as config_file:
+    configs = json.load(config_file)
 
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092',
+    'bootstrap.servers': configs['bootstrap'],
     'client.id': 'test1',
 }
 
 producer = Producer(conf)
 client = redis.StrictRedis(
     # host='127.0.0.1',
-    host='104.196.105.254',
+    host=configs['redis_ip'],
     port=6379,
     db=0)
 # value = {

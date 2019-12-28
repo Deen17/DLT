@@ -1,13 +1,16 @@
 import asyncio
 from aredis import StrictRedis
 from collections import deque
-import json
 from confluent_kafka import Producer
 import time
+import json
+
+with open('config.json') as config_file:
+    configs = json.load(config_file)
 
 start_time = 0
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092', # noqa
+    'bootstrap.servers': configs['bootstrap'],
     'client.id': 'test1',
 }
 
@@ -35,13 +38,13 @@ async def updateTransaction():
         "settled": False,
         "mutations": []
     }
-    client = StrictRedis(host='104.196.105.254',
+    client = StrictRedis(host=configs['redis_ip'],
                          port=6379,
                          db=0)
     # print(await client.zrange("test", 0, -1))
     tx_ids = deque()
     async with await client.pipeline() as pipe:
-        for i in range(0, 60000):
+        for i in range(0, 30000):
             await pipe.incr('transaction')
         tx_ids = deque(await pipe.execute())
     print("length of tx_ids:", len(tx_ids))

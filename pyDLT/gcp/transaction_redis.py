@@ -1,9 +1,12 @@
 import asyncio
 from aredis import StrictRedis
+import json
 
+with open('config.json') as config_file:
+    configs = json.load(config_file)
 
 async def updateTransaction():
-    client = StrictRedis(host='104.196.105.254',
+    client = StrictRedis(host=configs['redis_ip'],
                          port=6379,
                          db=0)
     # print(await client.zrange("test", 0, -1))

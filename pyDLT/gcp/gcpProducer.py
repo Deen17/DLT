@@ -1,11 +1,14 @@
 from confluent_kafka import Producer
-import json
 import random
 import asyncio
 import time
+import json
+
+with open('config.json') as config_file:
+    configs = json.load(config_file)
 
 conf = {
-    'bootstrap.servers': '34.74.80.207:39092,131.247.3.206:9092',
+    'bootstrap.servers': configs['bootstrap'],
     'client.id': 'jsonProducer1',
 }
 

@@ -69,7 +69,7 @@ var getDelayedTransactions = async function (id, start = 0, end = -1) {
 }
 
 app.use(cors())
-app.use(forceSSL)
+// app.use(forceSSL)
 app.use(function (req, res, next) {
     let today = new Date();
     console.log(today.getMonth() + '/' +
@@ -89,7 +89,7 @@ const asyncMiddleware = fn => (req, res, next) => {
 //Routes
 
 //gets
-app.get('/', (req, res) => res.send('Hello World!'))
+app.get('/', (req, res) => res.send('Hello World.'))
 
 app.get('/test', asyncMiddleware(async (req, res, next) => {
     console.log('test')

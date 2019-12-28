@@ -315,6 +315,23 @@ export class ApiService {
     return response.toPromise();
   }
 
+    /**
+   * Post a Transaction.
+   * @param {}
+   */
+  postUnsafeTransaction(transaction: TransactionRequest): Promise<TransactionProcessingResponse> {
+    let response = this.http.post<TransactionProcessingResponse>(
+      `${this.httpUrl}/users/transact`,
+      transaction,
+      httpOptions
+    )
+      .pipe(
+        //retry(3),
+        catchError(this.handleError)
+      )
+    return response.toPromise();
+  }
+
   postUndelay(transaction: transactionRow): Promise<TransactionProcessingResponse> {
     let response = this.http.post<TransactionProcessingResponse>(
       `${this.httpsUrl}/banks/acceptDelay`,

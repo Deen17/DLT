@@ -25,6 +25,7 @@
     <h3></h3>
   </mat-card-content>
   <mat-card-actions>
-    <button mat-raised-button (keydown.enter)="this.onSubmit()" color="primary">Transfer</button>
+    <button mat-raised-button (click)="this.onSubmit()" color="primary">Transfer</button>
+    <button mat-raised-button (click)="this.onUnsafeSubmit()" color="primary">Unsafe Transfer</button>
   </mat-card-actions>
 </mat-card>

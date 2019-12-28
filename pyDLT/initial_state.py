@@ -11,10 +11,10 @@ async def setInitialState():
     await client.flushdb()
     # user A is a customer of bank A
     user1dict = {
-        "name": "Adil",
+        "name": "adil",
         "accNo": "0001",
         "routingNo": "0001",
-        "balance": 10000,
+        "balance": 0,
     }
     user1balance = {
         "name": user1dict["name"],
@@ -23,10 +23,10 @@ async def setInitialState():
     }
     # user B is a customer of bank B
     user2dict = {
-        "name": "Boyang",
+        "name": "boyang",
         "accNo": "0001",
         "routingNo": "0002",
-        "balance": 10000,
+        "balance": 0,
     }
     user2balance = {
         "name": user2dict["name"],
@@ -46,14 +46,30 @@ async def setInitialState():
     usernames = {
         "adil": "00010001",
         "boyang": "00020001",
+        "sabreen": "00020002",
         "bankA": "00010000",
         "bankB": "00020000"
+    }
+    user3dict = {
+        "name": "sabreen",
+        "accNo": "0002",
+        "routingNo": "0002",
+        "balance": 0,
+    }
+    user3balance = {
+        "name": user3dict["name"],
+        "balance": user3dict["balance"],
+        "password": "jpmdlt"
     }
     # await client.incr('transaction')
     await client.hmset("user:" + user1dict["routingNo"] + user1dict["accNo"],
                        user1balance)
     await client.hmset("user:" + user2dict["routingNo"] + user2dict["accNo"],
                        user2balance)
+
+    await client.hmset("user:" + user3dict["routingNo"] + user3dict["accNo"],
+                       user3balance)
+
     await client.hmset("user:" + "00010000",
                        bankAbalance)
     await client.hmset("user:" + "00020000",
