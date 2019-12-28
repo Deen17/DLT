@@ -6,16 +6,20 @@ from typing import List
 # import time
 from aredis import StrictRedis
 from collections import deque
+import json
+
+with open('config.json') as config_file:
+    configs = json.load(config_file)
 
 finished_deque = deque()
-bootstrap = 'kafka://34.74.80.207:39092;kafka://35.196.13.159:29092;kafka://34.74.86.119:19092'  # noqa
+bootstrap = configs['kafka_bootstrap']
 app = faust.App('myapp1',
                 broker=bootstrap,
                 # processing_guarantee='exactly_once'
                 )
 client = StrictRedis(
     # host='127.0.0.1',
-    host='104.196.105.254',
+    host=configs['redis_ip'],
     port=6379,
     db=0)
 
