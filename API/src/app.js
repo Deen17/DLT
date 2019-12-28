@@ -35,7 +35,7 @@ let blockingClient = client.duplicate()
 //kafka client
 let HighLevelProducer = kafka.HighLevelProducer,
     kafkaClient = new kafka.KafkaClient({
-        kafkaHost: '34.74.80.207:39092,35.196.13.159:29092,34.74.86.119:19092',
+        kafkaHost: config.kafka.bootstrap
         // rejectUnauthorized: false,
         // ca: [fs.readFileSync('./bin/chain.pem', 'utf-8')],
         // cert: [fs.readFileSync('./bin/kafkaadmin.pem', 'utf-8')],

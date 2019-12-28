@@ -1,11 +1,14 @@
 import asyncio
 from aredis import StrictRedis
+import json
 
+with open('gcp/config.json') as config_file:
+    configs = json.load(config_file)
 
 async def setInitialState():
     client = StrictRedis(
         # host='127.0.0.1',
-        host='104.196.105.254',
+        host=configs['redis_ip'],
         port=6379,
         db=0)
     await client.flushdb()
